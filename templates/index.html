@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+        }
+        .container {
+            width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        input[type="text"], select {
+            width: 80%;
+            padding: 8px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .status {
+            color: blue;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Downloader</h1>
+
+        <div class="form-container">
+            <form action="/download" method="post">
+                <label for="url">Enter YouTube URL:</label><br>
+                <input type="text" id="url" name="url" placeholder="https://www.youtube.com/watch?v=..." required><br>
+
+                <label for="format">Select Format:</label><br>
+                <select name="format" id="format" required>
+                    <option value="video">Video (MP4)</option>
+                    <option value="audio">Audio (MP3)</option>
+                </select><br><br>
+
+                <button type="submit">Download</button>
+            </form>
+        </div>
+
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <div class="status" id="progress">
+            {% if status %}
+                {{ status }}
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function checkProgress() {
+            fetch('/progress')
+                .then(res => res.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('progress');
+
+                    if (data.status === "Downloading" || data.status === "Processing...") {
+                        statusDiv.innerHTML = `Status: ${data.status} — ${data.percent}`;
+                        setTimeout(checkProgress, 1000);
+                    } else if (data.status === "Completed" && data.filename) {
+                        statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}">Click here to download</a>`;
+                    } else if (data.status.startsWith("Error")) {
+                        statusDiv.innerHTML = `❌ ${data.status}`;
+                    }
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if ("{{ status }}" === "Downloading") {
+                checkProgress();
+            }
+        });
+    </script>
+</body>
+</html>
