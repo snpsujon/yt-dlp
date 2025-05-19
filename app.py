@@ -49,7 +49,13 @@ def download_video():
             ydl_opts = {
                 'progress_hooks': [progress_hook],
                 'outtmpl': output_template,
-                'cookies': '/app/cookies.txt',
+                # 'cookiesfrombrowser': ('chrome',),
+                'cookiefile': 'app/cookies.txt',
+                # 'proxy': 'socks5://jasim:jasim@103.238.216.129:1080',
+                # 'socket_timeout': 30,  # Increase socket timeout
+                # 'retries': 10,  # Increase the number of retries
+                # 'nocheckcertificate': True,  # Skip certificate check if needed
+
             }
 
             if format_type == 'audio':

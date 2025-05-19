@@ -1,101 +1,170 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Downloader</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
-        }
-        .container {
-            width: 500px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .form-container {
-            margin-bottom: 20px;
-        }
-        input[type="text"], select {
-            width: 80%;
-            padding: 8px;
-            margin: 10px 0;
-        }
-        button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-        .status {
-            color: blue;
-            margin-top: 10px;
-        }
-    </style>
+
+    <title>Multiplatform Video Downloader</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
-<body>
-    <div class="container">
-        <h1>Video Downloader</h1>
 
-        <div class="form-container">
-            <form action="/download" method="post">
-                <label for="url">Enter YouTube URL:</label><br>
-                <input type="text" id="url" name="url" placeholder="https://www.youtube.com/watch?v=..." required><br>
+<body class="bg-gray-100 text-gray-900">
 
-                <label for="format">Select Format:</label><br>
-                <select name="format" id="format" required>
-                    <option value="video">Video (MP4)</option>
-                    <option value="audio">Audio (MP3)</option>
-                </select><br><br>
+    <div class="container mx-auto py-10">
 
-                <button type="submit">Download</button>
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg mx-auto">
+
+            <h1 class="text-3xl font-bold text-center mb-6 text-indigo-600">🎥 Multiplatform Video Downloader</h1>
+
+
+
+            <form action="/download" method="post" class="space-y-4">
+
+                <div>
+
+                    <label for="url" class="block text-lg font-semibold">Enter Video URL:</label>
+
+                    <input type="text" id="url" name="url" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://www.example.com/video" required>
+
+                </div>
+
+
+
+                <div>
+
+                    <label for="format" class="block text-lg font-semibold">Select Format:</label>
+
+                    <select name="format" id="format" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" required>
+
+                        <option value="video">Video (MP4)</option>
+
+                        <option value="audio">Audio (MP3)</option>
+
+                    </select>
+
+                </div>
+
+
+
+                <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" onclick="showProgress()">🚀 Download</button>
+
             </form>
-        </div>
 
-        {% if error %}
-            <div class="error">{{ error }}</div>
-        {% endif %}
 
-        <div class="status" id="progress">
-            {% if status %}
-                {{ status }}
+
+            {% if error %}
+
+                <div class="mt-4 text-red-500 text-center">❌ {{ error }}</div>
+
             {% endif %}
+
+
+
+            <div class="mt-4 text-center" id="progress" style="display: none;">
+
+                {% if status %}
+
+                    {{ status }}
+
+                {% endif %}
+
+            </div>
+
+
+
+            <div class="w-full bg-gray-300 rounded-lg mt-4" id="progress-container" style="display: none;">
+
+                <div id="progress-bar" class="h-4 bg-indigo-600 rounded-lg text-xs text-white text-center" style="width: 0%;">0%</div>
+
+            </div>
+
         </div>
+
     </div>
 
-    <script>
-        function checkProgress() {
-            fetch('/progress')
-                .then(res => res.json())
-                .then(data => {
-                    const statusDiv = document.getElementById('progress');
 
-                    if (data.status === "Downloading" || data.status === "Processing...") {
-                        statusDiv.innerHTML = `Status: ${data.status} — ${data.percent}`;
-                        setTimeout(checkProgress, 1000);
-                    } else if (data.status === "Completed" && data.filename) {
-                        statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}">Click here to download</a>`;
-                    } else if (data.status.startsWith("Error")) {
-                        statusDiv.innerHTML = `❌ ${data.status}`;
-                    }
-                });
+
+    <script>
+
+        function showProgress() {
+
+            document.getElementById('progress').style.display = 'block';
+
+            document.getElementById('progress-container').style.display = 'block';
+
         }
 
+
+
+        function checkProgress() {
+
+            fetch('/progress')
+
+                .then(res => res.json())
+
+                .then(data => {
+
+                    const statusDiv = document.getElementById('progress');
+
+                    const progressBar = document.getElementById('progress-bar');
+
+
+
+                    if (data.status === "Downloading" || data.status === "Processing...") {
+
+                        statusDiv.innerHTML = `Status: ${data.status}`;
+
+                        progressBar.style.width = data.percent;
+
+                        progressBar.textContent = data.percent;
+
+                        setTimeout(checkProgress, 1000);
+
+                    } else if (data.status === "Completed" && data.filename) {
+
+                        statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}" class="text-indigo-600 underline">Click here to download</a>`;
+
+                        progressBar.style.width = "100%";
+
+                        progressBar.textContent = "100%";
+
+                    } else if (data.status.startsWith("Error")) {
+
+                        statusDiv.innerHTML = `❌ ${data.status}`;
+
+                        progressBar.style.width = "0%";
+
+                        progressBar.textContent = "Error";
+
+                    }
+
+                });
+
+        }
+
+
+
         document.addEventListener('DOMContentLoaded', () => {
+
             if ("{{ status }}" === "Downloading") {
+
+                showProgress();
+
                 checkProgress();
+
             }
+
         });
+
     </script>
+
 </body>
+
 </html>
+
