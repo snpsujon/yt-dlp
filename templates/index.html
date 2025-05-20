@@ -1,170 +1,138 @@
 <!DOCTYPE html>
-
-<html lang="en">
-
+<html lang="en" class="dark">
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Multiplatform Video Downloader</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Universal Media Downloader</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
 </head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+  <div class="container mx-auto py-10 px-4">
+    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 space-y-6">
+      <div class="flex items-center justify-between">
+        <h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">🎥 Universal Media Downloader</h1>
+        <button onclick="toggleDarkMode()" class="text-sm border px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+          🌓 Toggle Dark Mode
+        </button>
+      </div>
 
-<body class="bg-gray-100 text-gray-900">
-
-    <div class="container mx-auto py-10">
-
-        <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg mx-auto">
-
-            <h1 class="text-3xl font-bold text-center mb-6 text-indigo-600">🎥 Multiplatform Video Downloader</h1>
-
-
-
-            <form action="/download" method="post" class="space-y-4">
-
-                <div>
-
-                    <label for="url" class="block text-lg font-semibold">Enter Video URL:</label>
-
-                    <input type="text" id="url" name="url" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://www.example.com/video" required>
-
-                </div>
-
-
-
-                <div>
-
-                    <label for="format" class="block text-lg font-semibold">Select Format:</label>
-
-                    <select name="format" id="format" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" required>
-
-                        <option value="video">Video (MP4)</option>
-
-                        <option value="audio">Audio (MP3)</option>
-
-                    </select>
-
-                </div>
-
-
-
-                <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" onclick="showProgress()">🚀 Download</button>
-
-            </form>
-
-
-
-            {% if error %}
-
-                <div class="mt-4 text-red-500 text-center">❌ {{ error }}</div>
-
-            {% endif %}
-
-
-
-            <div class="mt-4 text-center" id="progress" style="display: none;">
-
-                {% if status %}
-
-                    {{ status }}
-
-                {% endif %}
-
-            </div>
-
-
-
-            <div class="w-full bg-gray-300 rounded-lg mt-4" id="progress-container" style="display: none;">
-
-                <div id="progress-bar" class="h-4 bg-indigo-600 rounded-lg text-xs text-white text-center" style="width: 0%;">0%</div>
-
-            </div>
-
+      <form action="/download" method="post" class="space-y-4" onsubmit="showProgress()">
+        <div>
+          <label for="url" class="block font-semibold">Enter Video/Playlist URLs (one per line)</label>
+          <div class="relative">
+            <textarea id="url" name="url" rows="4"
+              class="w-full p-3 pr-10 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="https://example.com/video" required>{{ url }}</textarea>
+            <button type="button" onclick="pasteClipboard()" title="Paste"
+              class="absolute top-2 right-2 text-gray-500 hover:text-indigo-500">
+              📋
+            </button>
+          </div>
+          <small class="text-gray-500 dark:text-gray-400">Multiple URLs supported. Paste one per line.</small>
         </div>
 
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="format" class="block font-semibold">Select Format</label>
+            <select name="format" id="format"
+              class="w-full p-3 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600" required>
+              <option value="video" {% if format == 'video' %}selected{% endif %}>Video (MP4)</option>
+              <option value="audio" {% if format == 'audio' %}selected{% endif %}>Audio (MP3)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="quality" class="block font-semibold">Select Quality</label>
+            <select name="quality" id="quality"
+              class="w-full p-3 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600">
+              <option value="best" {% if quality == 'best' %}selected{% endif %}>Best</option>
+              <option value="worst" {% if quality == 'worst' %}selected{% endif %}>Worst</option>
+              <option value="bestvideo+bestaudio" {% if quality == 'bestvideo+bestaudio' %}selected{% endif %}>Best Video + Audio</option>
+              <option value="18" {% if quality == '18' %}selected{% endif %}>MP4 360p (itag 18)</option>
+              <option value="22" {% if quality == '22' %}selected{% endif %}>MP4 720p (itag 22)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center mt-2">
+          <input type="checkbox" id="playlist" name="playlist" class="mr-2" {% if request.form.playlist %}checked{% endif %}>
+          <label for="playlist">Download Full Playlist(s)</label>
+        </div>
+
+        <div id="file-size-preview" class="text-sm text-gray-600 dark:text-gray-300 hidden">
+          📦 File size: <span id="file-size">Detecting...</span>
+        </div>
+
+        <button type="submit"
+          class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
+          🚀 Download
+        </button>
+      </form>
+
+      {% if error %}
+      <div class="text-red-500 text-center">❌ {{ error }}</div>
+      {% endif %}
+
+      <div class="mt-4 text-center" id="progress" style="display: none;">
+        {% if status %}{{ status }}{% endif %}
+      </div>
+      <div class="w-full bg-gray-300 dark:bg-gray-700 rounded-lg mt-2" id="progress-container" style="display: none;">
+        <div id="progress-bar" class="h-4 bg-indigo-600 text-white text-xs text-center rounded-lg" style="width: 0%;">0%</div>
+      </div>
     </div>
+  </div>
 
+  <script>
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+    }
 
+    function showProgress() {
+      document.getElementById('progress').style.display = 'block';
+      document.getElementById('progress-container').style.display = 'block';
+    }
 
-    <script>
-
-        function showProgress() {
-
-            document.getElementById('progress').style.display = 'block';
-
-            document.getElementById('progress-container').style.display = 'block';
-
-        }
-
-
-
-        function checkProgress() {
-
-            fetch('/progress')
-
-                .then(res => res.json())
-
-                .then(data => {
-
-                    const statusDiv = document.getElementById('progress');
-
-                    const progressBar = document.getElementById('progress-bar');
-
-
-
-                    if (data.status === "Downloading" || data.status === "Processing...") {
-
-                        statusDiv.innerHTML = `Status: ${data.status}`;
-
-                        progressBar.style.width = data.percent;
-
-                        progressBar.textContent = data.percent;
-
-                        setTimeout(checkProgress, 1000);
-
-                    } else if (data.status === "Completed" && data.filename) {
-
-                        statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}" class="text-indigo-600 underline">Click here to download</a>`;
-
-                        progressBar.style.width = "100%";
-
-                        progressBar.textContent = "100%";
-
-                    } else if (data.status.startsWith("Error")) {
-
-                        statusDiv.innerHTML = `❌ ${data.status}`;
-
-                        progressBar.style.width = "0%";
-
-                        progressBar.textContent = "Error";
-
-                    }
-
-                });
-
-        }
-
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-
-            if ("{{ status }}" === "Downloading") {
-
-                showProgress();
-
-                checkProgress();
-
-            }
-
+    function checkProgress() {
+      fetch('/progress')
+        .then(res => res.json())
+        .then(data => {
+          const statusDiv = document.getElementById('progress');
+          const progressBar = document.getElementById('progress-bar');
+          if (data.status.includes("Downloading") || data.status.includes("Processing")) {
+            statusDiv.innerHTML = `Status: ${data.status}`;
+            progressBar.style.width = data.percent;
+            progressBar.textContent = data.percent;
+            document.getElementById('file-size-preview').classList.remove('hidden');
+            document.getElementById('file-size').innerText = data.size || "Calculating...";
+            setTimeout(checkProgress, 1000);
+          } else if (data.status === "Completed" && data.filename) {
+            statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}" class="text-indigo-600 underline">Download here</a>`;
+            progressBar.style.width = "100%";
+            progressBar.textContent = "100%";
+          } else if (data.status.startsWith("Error")) {
+            statusDiv.innerHTML = `❌ ${data.status}`;
+            progressBar.style.width = "0%";
+            progressBar.textContent = "Error";
+          }
         });
+    }
 
-    </script>
+    function pasteClipboard() {
+      navigator.clipboard.readText().then(text => {
+        const textarea = document.getElementById('url');
+        textarea.value = text.trim();
+      });
+    }
 
+    document.addEventListener('DOMContentLoaded', () => {
+      if ("{{ status }}" === "Downloading") {
+        showProgress();
+        checkProgress();
+      }
+    });
+  </script>
 </body>
-
 </html>
-
