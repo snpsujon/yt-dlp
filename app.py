@@ -28,6 +28,9 @@ def auto_delete_old_files():
         for filename in os.listdir(DOWNLOAD_FOLDER):
             file_path = os.path.join(DOWNLOAD_FOLDER, filename)
             if os.path.isfile(file_path) and now - os.path.getmtime(file_path) > 600:
+                age = now - os.path.getmtime(file_path)
+                print(f"{filename} age: {age} seconds")
+
                 try:
                     os.remove(file_path)
                 except Exception as e:
