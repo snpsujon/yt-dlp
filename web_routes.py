@@ -2,7 +2,7 @@ import time
 import os
 import threading
 import zipfile
-from flask import  render_template, request, jsonify, session, Blueprint
+from flask import  render_template, request, jsonify, session, Blueprint, redirect, url_for
 import yt_dlp
 from uuid import uuid4
 from downloader_global import DOWNLOAD_FOLDER,download_sessions
@@ -29,8 +29,11 @@ def index():
         quality="best"
     )
 
-@web_bp.route('/download', methods=['POST'])
+@web_bp.route('/download', methods=['GET', 'POST'])
 def download_video():
+    if request.method == 'GET':
+        return redirect(url_for('web.index'))
+
     urls = request.form.get('url').strip().splitlines()
     format_type = request.form.get('format')
     playlist = request.form.get('playlist') == 'on'
