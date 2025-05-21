@@ -143,3 +143,6 @@ def get_progress():
     }))
 
 
+@web_bp.route('/privacy')
+def privacy_policy():
+    return render_template('privacy.html')
