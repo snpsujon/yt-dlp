@@ -48,6 +48,7 @@ def api_download():
                 'noplaylist': not playlist,
                 'quiet': True,
                 'merge_output_format': format_type if format_type in ['mp4', 'mkv', 'webm', 'mp3'] else None,
+                'cookiefile': 'app/cookies.txt',
             }
 
             if format_type == 'audio':
