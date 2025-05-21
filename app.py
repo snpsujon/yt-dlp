@@ -76,6 +76,7 @@ def download_video():
                     'noplaylist': not playlist,
                     'format': quality,
                     'quiet': True,
+                    'cookiefile': 'app/cookies.txt',
                 }
 
                 if format_type == 'audio':
