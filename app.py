@@ -23,19 +23,39 @@ def download_file(filename):
         return "File not found", 404
 
 def auto_delete_old_files():
+    print("[Auto Cleanup] Started.")
     while True:
         now = time.time()
         for filename in os.listdir(DOWNLOAD_FOLDER):
             file_path = os.path.join(DOWNLOAD_FOLDER, filename)
-            if os.path.isfile(file_path) and now - os.path.getmtime(file_path) > 600:
-                age = now - os.path.getmtime(file_path)
-                print(f"{filename} age: {age} seconds")
 
-                try:
-                    os.remove(file_path)
-                except Exception as e:
-                    print(f"Error deleting {filename}: {e}")
-        time.sleep(60)
+            if not os.path.isfile(file_path):
+                continue
+
+            try:
+                file_age = now - os.path.getmtime(file_path)
+
+                # Skip if file is modified in the last 15 minutes
+                if file_age < 900:
+                    continue
+
+                # Skip if file is currently in use (size still changing)
+                size1 = os.path.getsize(file_path)
+                time.sleep(1)
+                size2 = os.path.getsize(file_path)
+
+                if size1 != size2:
+                    print(f"[Auto Cleanup] Skipping {filename}: still being written.")
+                    continue
+
+                # Safe to delete
+                os.remove(file_path)
+                print(f"[Auto Cleanup] Deleted: {filename} (age: {int(file_age)}s)")
+
+            except Exception as e:
+                print(f"[Auto Cleanup] Error deleting {filename}: {e}")
+
+            time.sleep(300)  # check every 5 minutes
 
 
 threading.Thread(target=auto_delete_old_files, daemon=True).start()

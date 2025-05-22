@@ -23,3 +23,7 @@
 .youtube.com	TRUE	/	TRUE	1763469546	__Secure-ROLLOUT_TOKEN	CI3R3-ihv7vTahDy_sff2ayNAxj92N6jjLeNAw%3D%3D
 .youtube.com	TRUE	/	TRUE	1810989612	__Secure-YT_TVFAS	t=485433&s=2
 .youtube.com	TRUE	/	TRUE	1763469612	DEVICE_INFO	ChxOelV3TmpNNU1qYzNPVFk0TkRjM01EZ3hNQT09EKy2vMEGGPagsMEG
+.tiktok.com	TRUE	/	FALSE	1779022821	ttwid	1%7CV4-rKXnw0FgezkT7GCaz3AVQya5cqmQN0hneEfw74bc%7C1747918821%7Ca0652cb46dc94d65a3d2d9cbab1d7e0222f3ffa51bf293b25a93ef13d97573da
+.tiktok.com	TRUE	/	TRUE	0	tt_csrf_token	tKxrqn7q-Qg6VKY_vPffY4yAWnf-XG3st30E
+.tiktok.com	TRUE	/	TRUE	1763470867	tt_chain_token	xfrFxAgK5/0PLl9astFqIg==
+.tiktok.com	TRUE	/	TRUE	1748782867	msToken	tk_Fgdm4N-VnGIphL5_ieYIjo_uXmMx_y-Dt5j61yL03tB2u2xxE7D-HjVI1mGtAqcKE12w-F5bx3ECvsp6jNc5kvo8WCNYZ2j4=
