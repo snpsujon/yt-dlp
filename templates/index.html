@@ -96,6 +96,27 @@
           🚀 Download
         </button>
       </form>
+      <div class="mt-6 p-6 bg-indigo-50 dark:bg-gray-800 rounded-lg shadow-md text-center">
+  <h2 class="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mb-3">
+    🚀 Try Our App & Extension
+  </h2>
+  <p class="text-gray-700 dark:text-gray-300 mb-5">
+    Get the best experience on mobile and desktop. Download our app or browser extension now!
+  </p>
+  <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+<!--    <a href="https://play.google.com/store/apps/details?id=your.app.id" target="_blank">-->
+    <a href="#">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+           alt="Get it on Google Play" class="h-14 hover:scale-105 transition-transform" />
+    </a>
+    <div id="download-link"></div>
+<!--    <a href="https://chrome.google.com/webstore/detail/hnicogbjbfkjlkkeajepgjkkhojceeak" target="_blank">-->
+<!--      <img src="https://developer.chrome.com/static/docs/webstore/branding/image/HRs9MPufa1J1h5glNhut.png"-->
+<!--           alt="Available on Chrome Web Store" class="h-14 rounded-lg hover:scale-105 transition-transform bg-white p-2" />-->
+<!--    </a>-->
+  </div>
+</div>
+
 
       {% if error %}
       <div class="text-red-500 text-center">❌ {{ error }}</div>
@@ -119,6 +140,27 @@
 
 
   <script>
+    const isExtensionPublished = false;
+    const container = document.getElementById('download-link');
+
+    if (isExtensionPublished) {
+      container.innerHTML = `
+        <a href="https://chrome.google.com/webstore/detail/hnicogbjbfkjlkkeajepgjkkhojceeak" target="_blank" rel="noopener noreferrer">
+          <img src="https://developer.chrome.com/static/docs/webstore/branding/image/HRs9MPufa1J1h5glNhut.png"
+               alt="Available on Chrome Web Store"
+               class="h-14 rounded-lg hover:scale-105 transition-transform bg-white p-2" />
+        </a>
+      `;
+    } else {
+      container.innerHTML = `
+        <a href="/static/extentions/hnicogbjbfkjlkkeajepgjkkhojceeak.crx" download>
+          <img src="https://developer.chrome.com/static/docs/webstore/branding/image/HRs9MPufa1J1h5glNhut.png"
+               alt="Download Extention"
+               class="h-14 rounded-lg hover:scale-105 transition-transform bg-white p-2" />
+        </a>
+      `;
+    }
+
     function toggleDarkMode() {
       document.documentElement.classList.toggle('dark');
     }
