@@ -184,7 +184,10 @@
             document.getElementById('file-size').innerText = data.size || "Calculating...";
             setTimeout(checkProgress, 1000);
           } else if (data.status === "Completed" && data.filename) {
-            statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}" class="text-indigo-600 underline">Download here</a>`;
+            statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}" id="downloadlink" class="text-indigo-600 underline">Download here</a>`;
+            const downloadLink = document.getElementById('downloadlink');
+            downloadLink.click();
+
             progressBar.style.width = "100%";
             progressBar.textContent = "100%";
           } else if (data.status.startsWith("Error")) {
