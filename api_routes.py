@@ -1,11 +1,23 @@
 import os
+import re
 import threading
-from flask import  request,  jsonify,  Blueprint
+import unicodedata
+from flask import request, jsonify, Blueprint
 import yt_dlp
 from uuid import uuid4
-from downloader_global import DOWNLOAD_FOLDER,download_sessions
+from downloader_global import DOWNLOAD_FOLDER, download_sessions
 
 api_bp = Blueprint('api', __name__)
+
+def sanitize_filename(filename):
+    # Normalize to remove accents and convert to ASCII
+    nfkd_form = unicodedata.normalize('NFKD', filename)
+    only_ascii = nfkd_form.encode('ASCII', 'ignore').decode('ASCII')
+
+    # Replace spaces with underscores and remove non-alphanumeric characters
+    sanitized = re.sub(r'[^\w\s.-]', '', only_ascii)  # Keep alphanumeric, dot, dash, underscore
+    sanitized = re.sub(r'\s+', '_', sanitized)  # Replace spaces with underscores
+    return sanitized
 
 @api_bp.route('/api/progress', methods=['GET'])
 def get_progress_api():
@@ -16,6 +28,7 @@ def get_progress_api():
         "filename": None,
         "size": None
     }))
+
 @api_bp.route('/api/download', methods=['POST'])
 def api_download():
     urls = request.form.get('url').strip().splitlines()
@@ -64,12 +77,20 @@ def api_download():
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download(urls)
 
-            # After download, find the latest file added to the downloads folder
+            # After download, find the latest file
             files = [os.path.join(DOWNLOAD_FOLDER, f) for f in os.listdir(DOWNLOAD_FOLDER)]
             if files:
                 latest_file = max(files, key=os.path.getctime)
                 filename = os.path.basename(latest_file)
-                download_sessions[session_id]['filename'] = filename
+
+                # Sanitize filename
+                sanitized_name = sanitize_filename(os.path.splitext(filename)[0])
+                ext = os.path.splitext(filename)[1]
+                sanitized_full_path = os.path.join(DOWNLOAD_FOLDER, sanitized_name + ext)
+
+                os.rename(latest_file, sanitized_full_path)
+
+                download_sessions[session_id]['filename'] = os.path.basename(sanitized_full_path)
                 download_sessions[session_id]['status'] = "Completed"
             else:
                 download_sessions[session_id]['status'] = "Error: No file found after download"
@@ -81,7 +102,6 @@ def api_download():
     threading.Thread(target=download, daemon=True).start()
     return jsonify({"success": True, "session_id": session_id})
 
-
 @api_bp.route('/api/cancel', methods=['POST'])
 def cancel_download():
     data = request.get_json()
@@ -90,16 +110,5 @@ def cancel_download():
     if not session_id or session_id not in download_sessions:
         return jsonify({"success": False, "error": "Invalid session ID"}), 400
 
-    # Implement logic to cancel the ongoing download thread/task here
-    # For example, set a flag or terminate the thread safely
-
-    # Mark session as cancelled
     download_sessions[session_id]['status'] = "Cancelled"
-    # You should implement the actual download stopping logic depending on your download implementation.
-
     return jsonify({"success": True})
-
-
-
-
-
