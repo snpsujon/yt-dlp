@@ -17,7 +17,7 @@ def sanitize_filename(filename):
     # Replace spaces with underscores and remove non-alphanumeric characters
     sanitized = re.sub(r'[^\w\s.-]', '', only_ascii)  # Keep alphanumeric, dot, dash, underscore
     sanitized = re.sub(r'\s+', '_', sanitized)  # Replace spaces with underscores
-    return sanitized
+    return sanitized[:10]
 
 @api_bp.route('/api/progress', methods=['GET'])
 def get_progress_api():
