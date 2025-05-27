@@ -58,7 +58,7 @@ def auto_delete_old_files():
             time.sleep(300)  # check every 5 minutes
 
 
-threading.Thread(target=auto_delete_old_files, daemon=True).start()
+# threading.Thread(target=auto_delete_old_files, daemon=True).start()
 
 if __name__ == '__main__':
     app.run(debug=True)
