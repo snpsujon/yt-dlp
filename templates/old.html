@@ -80,7 +80,13 @@
               <option value="22" {% if quality == '22' %}selected{% endif %}>MP4 720p (itag 22)</option>
             </select>
           </div>
+          <div>
+            <label class="block font-semibold" for="audio-format-select">Choose audio format:</label>
+            <select class="w-full p-3 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600" id="audio-format-select">
+              <option value="">Loading...</option>
+            </select>
 
+          </div>
         </div>
 
         <div class="flex items-center mt-2">
@@ -105,12 +111,16 @@
     Get the best experience on mobile and desktop. Download our app or browser extension now!
   </p>
   <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+<!--    <a href="https://play.google.com/store/apps/details?id=your.app.id" target="_blank">-->
     <a href="#">
       <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
            alt="Get it on Google Play" class="h-14 hover:scale-105 transition-transform" />
     </a>
     <div id="download-link"></div>
-
+<!--    <a href="https://chrome.google.com/webstore/detail/hnicogbjbfkjlkkeajepgjkkhojceeak" target="_blank">-->
+<!--      <img src="https://developer.chrome.com/static/docs/webstore/branding/image/HRs9MPufa1J1h5glNhut.png"-->
+<!--           alt="Available on Chrome Web Store" class="h-14 rounded-lg hover:scale-105 transition-transform bg-white p-2" />-->
+<!--    </a>-->
   </div>
 </div>
 
@@ -203,6 +213,40 @@
         textarea.value = text.trim();
       });
     }
+
+//     async function fetchAudioFormats(videoUrl) {
+//   const response = await fetch('/get_audio_formats', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ url: videoUrl })
+//   });
+//
+//   const data = await response.json();
+//   const select = document.getElementById('audio-format-select');
+//   select.innerHTML = ''; // Clear old options
+//   if (data.audio_formats && data.audio_formats.length > 0) {
+//     data.audio_formats.forEach(a => {
+//         let label = `${a.language} [.${a.ext}]`;
+//         let option = new Option(label, a.url);
+//         select.appendChild(option);
+//       });
+//   }
+//   // if (data.video_formats && data.video_formats.length > 0) {
+//   //   data.video_formats.forEach(a => {
+//   //       let label = `${a.language} [.${a.ext}]`;
+//   //       let option = new Option(label, a.url);
+//   //       select.appendChild(option);
+//   //     });
+//   //
+//   // }
+//
+// }
+
+// // Example: call it when user submits a URL
+// document.getElementById('url').addEventListener('change', () => {
+//   const url = document.getElementById('url').value;
+//   fetchAudioFormats(url);
+// });
 
 
     document.addEventListener('DOMContentLoaded', () => {

@@ -146,3 +146,49 @@ def get_progress():
 @web_bp.route('/privacy')
 def privacy_policy():
     return render_template('privacy.html')
+
+@web_bp.route('/get_audio_formats', methods=['POST'])
+def get_formats():
+    url = request.json.get('url')
+    if not url:
+        return jsonify({'error': 'URL missing'}), 400
+
+    try:
+        ydl_opts = {
+            'quiet': True,
+            'skip_download': True,
+            'force_generic_extractor': False,
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            formats = info.get('formats', [])
+
+            mp4_formats = []
+            audio_formats = []
+
+            for f in formats:
+                # MP4 video with video codec
+                if f.get('ext') == 'mp4' and f.get('vcodec') != 'none':
+                    mp4_formats.append({
+                        'format_id': f.get('format_id'),
+                        'quality': f.get('format_note') or f.get('height'),
+                        'url': f.get('url'),
+                    })
+                # MP3 or M4A (audio only)
+                elif f.get('vcodec') == 'none' and f.get('ext') in ['mp3', 'm4a']:
+                    audio_formats.append({
+                        'format_id': f.get('format_id'),
+                        'language': f.get('language') or f.get('format_note') or 'Unknown',
+                        'url': f.get('url'),
+                        'ext': f.get('ext'),
+                    })
+
+            return jsonify({
+                'video_formats': mp4_formats,
+                'audio_formats': audio_formats
+            })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+

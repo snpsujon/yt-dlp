@@ -1,7 +1,6 @@
 import time
 import os
-import threading
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
 from api_routes import api_bp
 from downloader_global import DOWNLOAD_FOLDER
@@ -56,6 +55,47 @@ def auto_delete_old_files():
                 print(f"[Auto Cleanup] Error deleting {filename}: {e}")
 
             time.sleep(300)  # check every 5 minutes
+
+
+@app.route('/delete-server-downloaded-file')
+def delete_old_files():
+    print("[Auto Cleanup] Started.")
+    now = time.time()
+    deleted_files = []
+
+    for filename in os.listdir(DOWNLOAD_FOLDER):
+        file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+
+        if not os.path.isfile(file_path):
+            continue
+
+        try:
+            file_age = now - os.path.getmtime(file_path)
+
+            # Skip if file is modified in the last 10 minutes
+            if file_age < 600:
+                continue
+
+            # Skip if file is still being written
+            size1 = os.path.getsize(file_path)
+            time.sleep(1)
+            size2 = os.path.getsize(file_path)
+
+            if size1 != size2:
+                print(f"[Auto Cleanup] Skipping {filename}: still being written.")
+                continue
+
+            os.remove(file_path)
+            print(f"[Auto Cleanup] Deleted: {filename} (age: {int(file_age)}s)")
+            deleted_files.append(filename)
+
+        except Exception as e:
+            print(f"[Auto Cleanup] Error deleting {filename}: {e}")
+
+    return jsonify({
+        "success": True,
+        "deleted_files": deleted_files
+    })
 
 
 # threading.Thread(target=auto_delete_old_files, daemon=True).start()
