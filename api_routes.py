@@ -199,10 +199,14 @@ def get_language_name(code):
         return "Default"
 
 
-@api_bp.route('/api/direct-links', methods=['POST'])
+@api_bp.route('/api/direct-links', methods=['GET', 'POST'])
 def get_direct_links():
-    url = request.form.get('url')
-    format_type = request.form.get('format')  # 'video' or 'audio'
+    if request.method == 'POST':
+        url = request.form.get('url')
+        format_type = request.form.get('format')
+    else:  # GET
+        url = request.args.get('url')
+        format_type = request.args.get('format')
 
     if not url:
         return jsonify({"error": "URL is required"}), 400
