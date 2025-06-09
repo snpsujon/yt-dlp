@@ -237,6 +237,9 @@ def get_direct_links():
                     # skip audio only formats
                     if fmt.get('vcodec') == 'none':
                         continue
+                    # ✅ new line: skip video-only formats without audio
+                    # if fmt.get('acodec') == 'none':
+                    #     continue
                     # Accept common video formats (mp4, webm, mkv)
                     if ext not in ['mp4', 'webm', 'mkv']:
                         continue
@@ -275,6 +278,8 @@ def get_direct_links():
                     'filesize_readable': filesize_human_readable(filesize_bytes),
                     'format_note': fmt.get('format_note')
                 }
+                if fmt.get('vcodec') != 'none' and fmt.get('acodec') == 'none':
+                    link_info['note'] = 'Video Only (No Audio)'
 
                 grouped_links[ext].append(link_info)
 
