@@ -218,7 +218,10 @@ def get_direct_links():
             'quiet': True,
             'skip_download': True,
             'cookiefile': 'app/cookies.txt',
-            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36'
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36',
+            # 'force_insecure': True,
+            # 'extractor_args': {'youtube': {'player_client': ['web']}},
+
         }
 
         grouped_links = defaultdict(list)
@@ -278,6 +281,7 @@ def get_direct_links():
                     'filesize_readable': filesize_human_readable(filesize_bytes),
                     'format_note': fmt.get('format_note')
                 }
+                # link_info['ff'] = formats
                 if fmt.get('vcodec') != 'none' and fmt.get('acodec') == 'none':
                     link_info['note'] = 'Video Only (No Audio)'
 
