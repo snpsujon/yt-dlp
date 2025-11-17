@@ -1,5 +1,5 @@
-Flask
-yt-dlp
-gunicorn
-flask-cors
-pycountry
+Flask==3.0.0
+yt-dlp==2025.10.22
+gunicorn==21.2.0
+flask-cors==4.0.0
+pycountry==23.12.11

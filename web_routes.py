@@ -2,10 +2,11 @@ import time
 import os
 import threading
 import zipfile
-from flask import  render_template, request, jsonify, session, Blueprint, redirect, url_for
+from flask import  render_template, request, jsonify, session, Blueprint, redirect, url_for, send_file
 import yt_dlp
 from uuid import uuid4
 from downloader_global import DOWNLOAD_FOLDER,download_sessions
+from request_logger import log_request
 
 
 
@@ -89,7 +90,22 @@ def download_video():
                     })
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(url, download=True)
+                    try:
+                        info = ydl.extract_info(url, download=True)
+                        # Log the request
+                        log_request(url, info, format_type, 'download')
+                    except Exception as e:
+                        # Try to extract info without downloading for logging
+                        try:
+                            ydl_opts_log = ydl_opts.copy()
+                            ydl_opts_log['skip_download'] = True
+                            with yt_dlp.YoutubeDL(ydl_opts_log) as ydl_log:
+                                info = ydl_log.extract_info(url, download=False)
+                                log_request(url, info, format_type, 'download')
+                        except:
+                            # Log with minimal info if extraction fails
+                            log_request(url, None, format_type, 'download')
+                        raise e
                     filesize = info.get('filesize') or info.get('filesize_approx')
                     if filesize:
                         mb_size = round(filesize / (1024 * 1024), 2)
@@ -146,6 +162,100 @@ def get_progress():
 @web_bp.route('/privacy')
 def privacy_policy():
     return render_template('privacy.html')
+
+@web_bp.route('/admin')
+def admin_panel():
+    import os
+    from datetime import datetime
+    from downloader_global import DOWNLOAD_FOLDER
+    
+    files_info = []
+    if os.path.exists(DOWNLOAD_FOLDER):
+        for filename in os.listdir(DOWNLOAD_FOLDER):
+            file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+            if os.path.isfile(file_path):
+                file_size = os.path.getsize(file_path)
+                file_mtime = os.path.getmtime(file_path)
+                file_date = datetime.fromtimestamp(file_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Format file size
+                if file_size < 1024:
+                    size_str = f"{file_size} B"
+                elif file_size < 1024 * 1024:
+                    size_str = f"{file_size / 1024:.2f} KB"
+                else:
+                    size_str = f"{file_size / (1024 * 1024):.2f} MB"
+                
+                files_info.append({
+                    'name': filename,
+                    'size': size_str,
+                    'size_bytes': file_size,
+                    'date': file_date,
+                    'path': file_path
+                })
+    
+    # Sort by date (newest first)
+    files_info.sort(key=lambda x: x['date'], reverse=True)
+    
+    # Calculate total size
+    total_size = sum(f['size_bytes'] for f in files_info)
+    if total_size < 1024 * 1024:
+        total_size_str = f"{total_size / 1024:.2f} KB"
+    else:
+        total_size_str = f"{total_size / (1024 * 1024):.2f} MB"
+    
+    return render_template('admin.html', files=files_info, total_files=len(files_info), total_size=total_size_str)
+
+@web_bp.route('/admin/delete-file', methods=['POST'])
+def delete_file():
+    import os
+    from flask import request, jsonify
+    from downloader_global import DOWNLOAD_FOLDER
+    
+    filename = request.json.get('filename')
+    if not filename:
+        return jsonify({"success": False, "error": "Filename is required"}), 400
+    
+    file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+    
+    if not os.path.exists(file_path):
+        return jsonify({"success": False, "error": "File not found"}), 404
+    
+    try:
+        os.remove(file_path)
+        return jsonify({"success": True, "message": f"File {filename} deleted successfully"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@web_bp.route('/admin/requests')
+def admin_requests():
+    import json
+    import os
+    from request_logger import LOG_FILE
+    
+    logs = []
+    if os.path.exists(LOG_FILE):
+        try:
+            with open(LOG_FILE, 'r', encoding='utf-8') as f:
+                logs = json.load(f)
+            # Reverse to show newest first
+            logs.reverse()
+        except (json.JSONDecodeError, IOError):
+            logs = []
+    
+    return render_template('admin_requests.html', requests=logs, total_requests=len(logs))
+
+@web_bp.route('/admin/export-logs')
+def export_logs():
+    import json
+    import os
+    from flask import send_file
+    from request_logger import LOG_FILE
+    
+    if os.path.exists(LOG_FILE):
+        return send_file(LOG_FILE, as_attachment=True, download_name='request_logs.json')
+    else:
+        return "No logs file found", 404
 
 @web_bp.route('/get_audio_formats', methods=['POST'])
 def get_formats():

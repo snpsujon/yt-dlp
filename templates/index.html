@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,46 +33,193 @@
   <script>
     tailwind.config = { darkMode: 'class' };
   </script>
+  <style>
+    * {
+      perspective: 1000px;
+    }
+    
+    .card-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-3d:hover {
+      transform: translateY(-8px) rotateX(2deg);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.5) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark .glass-dark {
+      background: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    .btn-3d {
+      transform-style: preserve-3d;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-3d:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-3d:active {
+      transform: translateY(-1px) scale(0.98);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .input-3d {
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .dark .input-3d {
+      background: rgba(0, 0, 0, 0.4) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .input-3d:focus {
+      transform: translateZ(10px);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(99, 102, 241, 0.5), 0 4px 12px rgba(99, 102, 241, 0.3);
+      background: rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .dark .input-3d:focus {
+      background: rgba(0, 0, 0, 0.5) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(99, 102, 241, 0.6), 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+    }
+    
+    .neumorphism {
+      background: linear-gradient(145deg, #f0f0f0, #ffffff);
+      box-shadow: 8px 8px 16px #d1d1d1, -8px -8px 16px #ffffff;
+    }
+    
+    .neumorphism-dark {
+      background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+      box-shadow: 8px 8px 16px #0f0f0f, -8px -8px 16px #2d2d2d;
+    }
+    
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotateX(0deg); }
+      50% { transform: translateY(-20px) rotateX(5deg); }
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    .dark .gradient-bg {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #16213e 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .text-3d {
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5),
+                   0 2px 0 rgba(255, 255, 255, 0.3),
+                   0 3px 5px rgba(0, 0, 0, 0.2),
+                   0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    select option {
+      background: rgba(30, 30, 50, 0.95) !important;
+      color: white !important;
+      font-weight: 600;
+      padding: 12px;
+    }
+    
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-  <div class="container mx-auto py-10 px-4">
-    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 space-y-6">
+<body class="gradient-bg min-h-screen text-white">
+  <div class="container mx-auto py-10 px-4" style="perspective: 1000px;">
+    <div class="max-w-2xl mx-auto glass dark:glass-dark rounded-3xl shadow-2xl p-8 space-y-6 card-3d floating">
       <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">🎥 Universal Media Downloader</h1>
-        <button onclick="toggleDarkMode()" class="text-sm border px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
-          🌓 Toggle Dark Mode
-        </button>
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-3d">
+          🎥 Universal Media Downloader
+        </h1>
+        <div class="flex gap-2">
+          <a href="/direct-links" class="glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-110 transition-transform btn-3d text-sm font-semibold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
+            🔗 Direct Links
+          </a>
+          <button onclick="toggleDarkMode()" class="glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-110 transition-transform btn-3d text-sm font-semibold">
+            🌓
+          </button>
+        </div>
       </div>
 
-      <form action="/download" method="post" class="space-y-4" onsubmit="showProgress()">
-        <div>
-          <label for="url" class="block font-semibold">Enter Video/Playlist URLs (one per line)</label>
+      <form action="/download" method="post" class="space-y-6" onsubmit="showProgress()">
+        <div class="space-y-2">
+          <label for="url" class="block font-bold text-lg text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Enter Video/Playlist URLs</label>
           <div class="relative">
             <textarea id="url" name="url" rows="4"
-              class="w-full p-3 pr-10 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600"
+              class="w-full p-4 pr-12 mt-2 rounded-2xl input-3d glass dark:glass-dark focus:outline-none text-white font-semibold placeholder-white/70 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
               placeholder="https://example.com/video" required>{{ url }}</textarea>
             <button type="button" onclick="pasteClipboard()" title="Paste"
-              class="absolute top-2 right-2 text-gray-500 hover:text-indigo-500">
+              class="absolute top-4 right-4 glass dark:glass-dark p-2 rounded-xl hover:scale-110 transition-transform btn-3d text-xl text-white">
               📋
             </button>
           </div>
-          <small class="text-gray-500 dark:text-gray-400">Multiple URLs supported. Paste one per line.</small>
+          <small class="text-white text-sm font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">Multiple URLs supported. Paste one per line.</small>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label for="format" class="block font-semibold">Select Format</label>
+          <div class="space-y-2">
+            <label for="format" class="block font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Select Format</label>
             <select name="format" id="format"
-              class="w-full p-3 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600" required>
+              class="w-full p-4 mt-2 rounded-2xl input-3d glass dark:glass-dark focus:outline-none text-white font-semibold cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" required>
               <option value="video" {% if format == 'video' %}selected{% endif %}>Video (MP4)</option>
               <option value="audio" {% if format == 'audio' %}selected{% endif %}>Audio (MP3)</option>
             </select>
           </div>
 
-          <div>
-            <label for="quality" class="block font-semibold">Select Quality</label>
+          <div class="space-y-2">
+            <label for="quality" class="block font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Select Quality</label>
             <select name="quality" id="quality"
-              class="w-full p-3 mt-1 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:bg-gray-700 dark:border-gray-600">
+              class="w-full p-4 mt-2 rounded-2xl input-3d glass dark:glass-dark focus:outline-none text-white font-semibold cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
               <option value="best" {% if quality == 'best' %}selected{% endif %}>Best</option>
               <option value="worst" {% if quality == 'worst' %}selected{% endif %}>Worst</option>
               <option value="bestvideo+bestaudio" {% if quality == 'bestvideo+bestaudio' %}selected{% endif %}>Best Video + Audio</option>
@@ -80,28 +227,30 @@
               <option value="22" {% if quality == '22' %}selected{% endif %}>MP4 720p (itag 22)</option>
             </select>
           </div>
-
         </div>
 
-        <div class="flex items-center mt-2">
-          <input type="checkbox" id="playlist" name="playlist" class="mr-2" {% if request.form.playlist %}checked{% endif %}>
-          <label for="playlist">Download Full Playlist(s)</label>
+        <div class="flex items-center space-x-3 glass dark:glass-dark p-4 rounded-2xl">
+          <input type="checkbox" id="playlist" name="playlist" class="w-5 h-5 rounded cursor-pointer" {% if request.form.playlist %}checked{% endif %}>
+          <label for="playlist" class="font-semibold text-white cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">Download Full Playlist(s)</label>
         </div>
 
-        <div id="file-size-preview" class="text-sm text-gray-600 dark:text-gray-300 hidden">
-          📦 File size: <span id="file-size">Detecting...</span>
-        </div>
-
-        <button type="submit"
-          class="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all">
-          🚀 Download
+        <button type="submit" id="downloadButton"
+          class="w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-2xl font-bold text-lg btn-3d disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl">
+          <span id="buttonText" class="relative z-10">🚀 Download</span>
+          <span id="buttonLoader" class="hidden inline-block relative z-10">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Processing...
+          </span>
         </button>
       </form>
-      <div class="mt-6 p-6 bg-indigo-50 dark:bg-gray-800 rounded-lg shadow-md text-center">
-  <h2 class="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mb-3">
+      <div class="mt-6 p-6 glass dark:glass-dark rounded-2xl shadow-xl text-center card-3d">
+  <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent mb-3">
     🚀 Try Our App & Extension
   </h2>
-  <p class="text-gray-700 dark:text-gray-300 mb-5">
+  <p class="text-white/90 mb-5 drop-shadow">
     Get the best experience on mobile and desktop. Download our app or browser extension now!
   </p>
   <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
@@ -119,19 +268,96 @@
       <div class="text-red-500 text-center">❌ {{ error }}</div>
       {% endif %}
 
-      <div class="mt-4 text-center" id="progress" style="display: none;">
-        {% if status %}{{ status }}{% endif %}
+      <!-- Loading/Progress Section -->
+      <div id="progress-section" class="hidden mt-6">
+        <div class="glass dark:glass-dark rounded-3xl p-8 shadow-2xl card-3d border border-white/20">
+          <!-- Initial Loading State -->
+          <div id="loading-spinner" class="text-center space-y-6">
+            <div class="flex justify-center">
+              <div class="relative">
+                <!-- Outer ring -->
+                <div class="absolute inset-0 rounded-full border-4 border-indigo-200 dark:border-indigo-900 animate-pulse"></div>
+                <!-- Spinning ring -->
+                <div class="w-20 h-20 rounded-full border-4 border-transparent border-t-indigo-600 dark:border-t-indigo-400 border-r-indigo-600 dark:border-r-indigo-400 animate-spin"></div>
+                <!-- Center dot -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-3 h-3 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-xl font-bold text-indigo-700 dark:text-indigo-300">Preparing Download</h3>
+              <div class="flex justify-center space-x-1">
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0s"></span>
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Display -->
+          <div id="progress-display" class="hidden space-y-6">
+            <!-- Status Header -->
+            <div class="text-center space-y-2">
+              <div class="flex items-center justify-center space-x-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <h3 class="text-xl font-bold text-white drop-shadow-lg" id="status-text">
+                  {% if status %}{{ status }}{% else %}Initializing...{% endif %}
+                </h3>
+              </div>
+              <p id="file-size-preview" class="text-sm text-white/90 drop-shadow">
+                📦 File size: <span id="file-size" class="font-semibold text-yellow-300">Detecting...</span>
+              </p>
+            </div>
+
+            <!-- Progress Bar Container -->
+            <div class="space-y-2">
+              <div class="flex justify-between text-xs text-white/90 drop-shadow">
+                <span>Progress</span>
+                <span id="progress-text" class="font-semibold text-yellow-300">0%</span>
+              </div>
+              <div class="relative w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                <div id="progress-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full transition-all duration-500 ease-out shadow-lg" style="width: 0%;">
+                  <div class="absolute inset-0 bg-white opacity-30 animate-shimmer"></div>
+                </div>
+                <!-- Animated shine effect -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20 animate-shine"></div>
+              </div>
+            </div>
+
+            <!-- Progress Message -->
+            <div class="text-center">
+              <p id="progress-message" class="text-sm text-white/80 italic drop-shadow">
+                Please wait while we process your request...
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="w-full bg-gray-300 dark:bg-gray-700 rounded-lg mt-2" id="progress-container" style="display: none;">
-        <div id="progress-bar" class="h-4 bg-indigo-600 text-white text-xs text-center rounded-lg" style="width: 0%;">0%</div>
-      </div>
+
+      <style>
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes shine {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          100% { transform: translateX(200%) skewX(-15deg); }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+        .animate-shine {
+          animation: shine 3s infinite;
+        }
+      </style>
     </div>
   </div>
-  <footer class="mt-10 text-center text-sm text-gray-500 dark:text-gray-400">
-  <hr class="my-4 border-gray-300 dark:border-gray-600">
+  <footer class="mt-10 text-center text-sm text-white/80 drop-shadow">
+  <hr class="my-4 border-white/20">
   <p>
-    &copy; {{ year }} Universal Media Downloader by <a href="https://snpsujon.me" class="text-indigo-500 hover:underline">Snp Sujon</a>.
-    <a href="/privacy" class="ml-2 text-indigo-500 hover:underline">Privacy Policy</a>
+    &copy; {{ year }} Universal Media Downloader by <a href="https://snpsujon.me" class="text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Snp Sujon</a>.
+    <a href="/privacy" class="ml-2 text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Privacy Policy</a>
   </p>
 </footer>
 
@@ -160,40 +386,121 @@
 
 
     function toggleDarkMode() {
-      document.documentElement.classList.toggle('dark');
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      
+      // Save preference to localStorage
+      if (html.classList.contains('dark')) {
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        localStorage.setItem('darkMode', 'disabled');
+      }
     }
+    
+    // Load dark mode preference on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const darkMode = localStorage.getItem('darkMode');
+      if (darkMode === 'enabled') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
 
     function showProgress() {
-      document.getElementById('progress').style.display = 'block';
-      document.getElementById('progress-container').style.display = 'block';
+      const progressSection = document.getElementById('progress-section');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const progressDisplay = document.getElementById('progress-display');
+      const downloadButton = document.getElementById('downloadButton');
+      const buttonText = document.getElementById('buttonText');
+      const buttonLoader = document.getElementById('buttonLoader');
+      
+      // Disable button and show loading state
+      downloadButton.disabled = true;
+      buttonText.classList.add('hidden');
+      buttonLoader.classList.remove('hidden');
+      
+      // Show progress section with initial loading spinner
+      progressSection.classList.remove('hidden');
+      loadingSpinner.classList.remove('hidden');
+      progressDisplay.classList.add('hidden');
     }
 
     function checkProgress() {
       fetch('/progress')
         .then(res => res.json())
         .then(data => {
-          const statusDiv = document.getElementById('progress');
+          const statusText = document.getElementById('status-text');
           const progressBar = document.getElementById('progress-bar');
+          const progressText = document.getElementById('progress-text');
+          const fileSize = document.getElementById('file-size');
+          const progressMessage = document.getElementById('progress-message');
+          const loadingSpinner = document.getElementById('loading-spinner');
+          const progressDisplay = document.getElementById('progress-display');
+          
+          // Switch from loading spinner to progress display once we have data
+          if (loadingSpinner && !loadingSpinner.classList.contains('hidden')) {
+            loadingSpinner.classList.add('hidden');
+            progressDisplay.classList.remove('hidden');
+          }
+          
           if (data.status.includes("Downloading") || data.status.includes("Processing")) {
-            statusDiv.innerHTML = `Status: ${data.status}`;
+            statusText.innerHTML = `<span class="text-white drop-shadow-lg">${data.status}</span>`;
             progressBar.style.width = data.percent;
-            progressBar.textContent = data.percent;
-            document.getElementById('file-size-preview').classList.remove('hidden');
-            document.getElementById('file-size').innerText = data.size || "Calculating...";
+            progressText.textContent = data.percent;
+            
+            if (data.size) {
+              fileSize.textContent = data.size;
+            } else {
+              fileSize.textContent = "Calculating...";
+            }
+            
+            progressMessage.textContent = "Download in progress...";
             setTimeout(checkProgress, 1000);
           } else if (data.status === "Completed" && data.filename) {
-            statusDiv.innerHTML = `✅ Download complete! <a href="/downloads/${encodeURIComponent(data.filename)}" id="downloadlink" class="text-indigo-600 underline">Download again</a>`;
-            const downloadLink = document.getElementById('downloadlink');
-            downloadLink.click();
-
+            statusText.innerHTML = `✅ <span class="text-green-600 dark:text-green-400 font-bold">Download Complete!</span>`;
             progressBar.style.width = "100%";
-            progressBar.textContent = "100%";
-            document.getElementById('progress-container').style.display = 'none';
+            progressBar.className = "absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-full transition-all duration-500 ease-out shadow-lg";
+            progressText.textContent = "100%";
+            progressMessage.innerHTML = `<a href="/downloads/${encodeURIComponent(data.filename)}" id="downloadlink" class="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold text-base">🎉 Click here to download your file</a>`;
+            
+            // Re-enable button
+            const downloadButton = document.getElementById('downloadButton');
+            const buttonText = document.getElementById('buttonText');
+            const buttonLoader = document.getElementById('buttonLoader');
+            if (downloadButton) {
+              downloadButton.disabled = false;
+              buttonText.classList.remove('hidden');
+              buttonLoader.classList.add('hidden');
+            }
+            
+            // Auto-click download link
+            setTimeout(() => {
+              const downloadLink = document.getElementById('downloadlink');
+              if (downloadLink) {
+                downloadLink.click();
+              }
+            }, 500);
           } else if (data.status.startsWith("Error")) {
-            statusDiv.innerHTML = `❌ ${data.status}`;
+            statusText.innerHTML = `❌ <span class="text-red-600 dark:text-red-400 font-bold">${data.status}</span>`;
             progressBar.style.width = "0%";
-            progressBar.textContent = "Error";
+            progressBar.className = "absolute top-0 left-0 h-full bg-gradient-to-r from-red-500 via-rose-500 to-pink-500 rounded-full transition-all duration-500 ease-out shadow-lg";
+            progressText.textContent = "Error";
+            progressMessage.innerHTML = `<span class="text-red-600 dark:text-red-400">An error occurred during download. Please try again.</span>`;
+            
+            // Re-enable button on error
+            const downloadButton = document.getElementById('downloadButton');
+            const buttonText = document.getElementById('buttonText');
+            const buttonLoader = document.getElementById('buttonLoader');
+            if (downloadButton) {
+              downloadButton.disabled = false;
+              buttonText.classList.remove('hidden');
+              buttonLoader.classList.add('hidden');
+            }
           }
+        })
+        .catch(error => {
+          console.error('Error checking progress:', error);
         });
     }
 

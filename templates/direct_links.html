@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Direct Links - Universal Media Downloader</title>
+  <meta name="description" content="Get direct download links for videos or audio from any platform." />
+  <meta name="keywords" content="direct links, video downloader, audio downloader, universal downloader, mp4, mp3" />
+  <meta name="author" content="Snp Sujon" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Direct Links - Universal Media Downloader" />
+  <meta property="og:description" content="Get direct download links for any video or audio effortlessly." />
+  <meta property="og:image" content="/static/images/icon.png" />
+  <meta property="og:url" content="https://snpsujon.me/" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Direct Links - Universal Media Downloader" />
+  <meta name="twitter:description" content="Get direct download links for any video or audio effortlessly." />
+  <meta name="twitter:image" content="/static/logo.png" />
+
+  <!-- Favicon and Icons -->
+  <link rel="icon" href="/static/images/icon.png" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/images/icon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/images/icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <style>
+    * {
+      perspective: 1000px;
+    }
+    
+    .card-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-3d:hover {
+      transform: translateY(-8px) rotateX(2deg);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.5) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark .glass-dark {
+      background: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    .btn-3d {
+      transform-style: preserve-3d;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-3d:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-3d:active {
+      transform: translateY(-1px) scale(0.98);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .input-3d {
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .dark .input-3d {
+      background: rgba(0, 0, 0, 0.4) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .input-3d:focus {
+      transform: translateZ(10px);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(99, 102, 241, 0.5), 0 4px 12px rgba(99, 102, 241, 0.3);
+      background: rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .dark .input-3d:focus {
+      background: rgba(0, 0, 0, 0.5) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(99, 102, 241, 0.6), 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+    }
+    
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotateX(0deg); }
+      50% { transform: translateY(-20px) rotateX(5deg); }
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    .dark .gradient-bg {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #16213e 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .text-3d {
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5),
+                   0 2px 0 rgba(255, 255, 255, 0.3),
+                   0 3px 5px rgba(0, 0, 0, 0.2),
+                   0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .format-card {
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+    }
+    
+    .format-card:hover {
+      transform: translateY(-5px) rotateX(1deg);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    select option {
+      background: rgba(30, 30, 50, 0.95) !important;
+      color: white !important;
+      font-weight: 600;
+      padding: 12px;
+    }
+    
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <div class="container mx-auto py-10 px-4" style="perspective: 1000px;">
+    <div class="max-w-4xl mx-auto glass dark:glass-dark rounded-3xl shadow-2xl p-8 space-y-6 card-3d floating">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-3d">
+            🔗 Direct Links
+          </h1>
+          <p class="text-sm text-white mt-2 font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">Get direct download links for videos and audio</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="/" class="glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-110 transition-transform btn-3d text-sm font-semibold">
+            🏠 Home
+          </a>
+          <button onclick="toggleDarkMode()" class="glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-110 transition-transform btn-3d text-sm font-semibold">
+            🌓
+          </button>
+        </div>
+      </div>
+
+      <form id="directLinksForm" class="space-y-6" onsubmit="fetchDirectLinks(event)">
+        <div class="space-y-2">
+          <label for="url" class="block font-bold text-lg text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Enter Video URL</label>
+          <div class="relative">
+            <input type="url" id="url" name="url"
+              class="w-full p-4 pr-12 mt-2 rounded-2xl input-3d glass dark:glass-dark focus:outline-none text-white font-semibold placeholder-white/70 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+              placeholder="https://www.youtube.com/watch?v=..." required />
+            <button type="button" onclick="pasteClipboard()" title="Paste"
+              class="absolute top-4 right-4 glass dark:glass-dark p-2 rounded-xl hover:scale-110 transition-transform btn-3d text-xl text-white">
+              📋
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label for="format" class="block font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Select Format</label>
+          <select name="format" id="format"
+            class="w-full p-4 mt-2 rounded-2xl input-3d glass dark:glass-dark focus:outline-none text-white font-semibold cursor-pointer drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" required>
+            <option value="video">Video (MP4, WebM, etc.)</option>
+            <option value="audio">Audio (MP3, M4A, etc.)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="fetchButton"
+          class="w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-2xl font-bold text-lg btn-3d disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl">
+          <span id="buttonText" class="relative z-10">🔍 Fetch Direct Links</span>
+          <span id="buttonLoader" class="hidden inline-block relative z-10">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Fetching...
+          </span>
+        </button>
+      </form>
+
+      <!-- Loading State -->
+      <div id="loading" class="hidden mt-6">
+        <div class="glass dark:glass-dark rounded-3xl p-8 shadow-2xl card-3d border border-white/20">
+          <!-- Animated Loading Spinner -->
+          <div class="text-center space-y-6">
+            <div class="flex justify-center">
+              <div class="relative">
+                <!-- Outer pulsing ring -->
+                <div class="absolute inset-0 rounded-full border-4 border-indigo-200 dark:border-indigo-900 animate-pulse"></div>
+                <!-- Spinning ring -->
+                <div class="w-20 h-20 rounded-full border-4 border-transparent border-t-indigo-600 dark:border-t-indigo-400 border-r-indigo-600 dark:border-r-indigo-400 animate-spin"></div>
+                <!-- Center dot -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="w-3 h-3 bg-indigo-600 dark:bg-indigo-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h3 class="text-xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Fetching Direct Links</h3>
+              <p class="text-sm text-white font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">Please wait while we extract available formats</p>
+              <div class="flex justify-center space-x-1">
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0s"></span>
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                <span class="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Skeleton Loader for Video Info -->
+          <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg p-6 space-y-4 animate-pulse">
+            <div class="h-8 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+              <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+            </div>
+            <div class="h-48 bg-gray-300 dark:bg-gray-600 rounded-lg w-full max-w-md"></div>
+          </div>
+
+          <!-- Skeleton Loader for Format Cards -->
+          <div class="mt-6 space-y-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 space-y-3 animate-pulse">
+              <div class="h-6 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+              <div class="space-y-3">
+                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                      <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+                    </div>
+                    <div class="h-10 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+                  </div>
+                </div>
+                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                      <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+                    </div>
+                    <div class="h-10 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error" class="hidden glass dark:glass-dark border border-red-300 dark:border-red-700 rounded-2xl p-6 card-3d">
+        <p class="text-red-300 font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]" id="errorMessage"></p>
+      </div>
+
+      <!-- Results Section -->
+      <div id="results" class="hidden space-y-6">
+        <!-- Video Info -->
+        <div id="videoInfo" class="glass dark:glass-dark rounded-2xl p-6 space-y-3 card-3d">
+          <h2 class="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent" id="videoTitle"></h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-white font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
+            <div><span class="font-semibold">Channel:</span> <span id="videoChannel"></span></div>
+            <div><span class="font-semibold">Duration:</span> <span id="videoDuration"></span></div>
+            <div><span class="font-semibold">Views:</span> <span id="videoViews"></span></div>
+            <div><span class="font-semibold">Upload Date:</span> <span id="videoUploadDate"></span></div>
+          </div>
+          <img id="videoThumbnail" src="" alt="Thumbnail" class="w-full max-w-md rounded-lg hidden" />
+        </div>
+
+        <!-- Links by Format -->
+        <div id="linksContainer" class="space-y-4">
+          <!-- Links will be dynamically inserted here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-10 text-center text-sm text-white/80 drop-shadow">
+    <hr class="my-4 border-white/20">
+    <p>
+      &copy; 2025 Universal Media Downloader by <a href="https://snpsujon.me" class="text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Snp Sujon</a>.
+      <a href="/privacy" class="ml-2 text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Privacy Policy</a>
+    </p>
+  </footer>
+
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      
+      // Save preference to localStorage
+      if (html.classList.contains('dark')) {
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    }
+    
+    // Load dark mode preference on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const darkMode = localStorage.getItem('darkMode');
+      if (darkMode === 'enabled') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+
+    function pasteClipboard() {
+      navigator.clipboard.readText().then(text => {
+        document.getElementById('url').value = text.trim();
+      }).catch(err => {
+        console.error('Failed to read clipboard:', err);
+      });
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) return 'Unknown size';
+      const mb = bytes / (1024 * 1024);
+      if (mb < 1) {
+        return (bytes / 1024).toFixed(2) + ' KB';
+      }
+      return mb.toFixed(2) + ' MB';
+    }
+
+    function formatNumber(num) {
+      if (!num) return 'N/A';
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      try {
+        const year = dateStr.substring(0, 4);
+        const month = dateStr.substring(4, 6);
+        const day = dateStr.substring(6, 8);
+        return `${year}-${month}-${day}`;
+      } catch {
+        return dateStr;
+      }
+    }
+
+    async function fetchDirectLinks(event) {
+      event.preventDefault();
+      
+      const url = document.getElementById('url').value;
+      const format = document.getElementById('format').value;
+      const fetchButton = document.getElementById('fetchButton');
+      const buttonText = document.getElementById('buttonText');
+      const buttonLoader = document.getElementById('buttonLoader');
+      
+      // Disable button and show loading state
+      fetchButton.disabled = true;
+      buttonText.classList.add('hidden');
+      buttonLoader.classList.remove('hidden');
+      
+      // Hide previous results
+      document.getElementById('results').classList.add('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('loading').classList.remove('hidden');
+      
+      try {
+        const response = await fetch(`/api/direct-links?url=${encodeURIComponent(url)}&format=${format}`);
+        const data = await response.json();
+        
+        document.getElementById('loading').classList.add('hidden');
+        
+        // Re-enable button
+        fetchButton.disabled = false;
+        buttonText.classList.remove('hidden');
+        buttonLoader.classList.add('hidden');
+        
+        if (!data.success) {
+          const errorMessage = data.error || 'Failed to fetch links';
+          
+          // Check if it's a "no matching formats" error
+          if (errorMessage.includes('No matching formats found') || errorMessage.includes('not available')) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.className = 'glass dark:glass-dark border border-yellow-300 dark:border-yellow-700 rounded-2xl p-6 text-center card-3d';
+            errorDiv.innerHTML = `
+              <p class="text-yellow-300 mb-4 text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">${errorMessage}</p>
+              <p class="text-white mb-4 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">You can use our main downloader to download this content.</p>
+              <a href="/" class="inline-block px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-xl font-semibold btn-3d shadow-lg">
+                🏠 Go to Main Downloader
+              </a>
+            `;
+          } else {
+            document.getElementById('errorMessage').textContent = errorMessage;
+          }
+          document.getElementById('error').classList.remove('hidden');
+          return;
+        }
+        
+        // Display video info
+        if (data.info) {
+          document.getElementById('videoTitle').textContent = data.info.title || 'Unknown Title';
+          document.getElementById('videoChannel').textContent = data.info.channel || 'N/A';
+          document.getElementById('videoDuration').textContent = data.info.duration || 'N/A';
+          document.getElementById('videoViews').textContent = formatNumber(data.info.view_count) || 'N/A';
+          document.getElementById('videoUploadDate').textContent = formatDate(data.info.upload_date) || 'N/A';
+          
+          if (data.info.thumbnail) {
+            const thumbnailImg = document.getElementById('videoThumbnail');
+            thumbnailImg.src = data.info.thumbnail;
+            thumbnailImg.classList.remove('hidden');
+          }
+        }
+        
+        // Display links grouped by extension
+        const linksContainer = document.getElementById('linksContainer');
+        linksContainer.innerHTML = '';
+        
+        if (data.links && Object.keys(data.links).length > 0) {
+          for (const [ext, links] of Object.entries(data.links)) {
+            const formatSection = document.createElement('div');
+            formatSection.className = 'glass dark:glass-dark rounded-2xl p-6 card-3d';
+            
+            const formatHeader = document.createElement('h3');
+            formatHeader.className = 'text-2xl font-bold bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent mb-6';
+            formatHeader.textContent = `.${ext.toUpperCase()} Formats`;
+            formatSection.appendChild(formatHeader);
+            
+            const linksList = document.createElement('div');
+            linksList.className = 'space-y-3';
+            
+            links.forEach(link => {
+              const linkCard = document.createElement('div');
+              linkCard.className = 'glass dark:glass-dark rounded-2xl p-4 format-card';
+              
+              const linkInfo = document.createElement('div');
+              linkInfo.className = 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3';
+              
+              const linkDetails = document.createElement('div');
+              linkDetails.className = 'flex-1';
+              
+              const qualityInfo = document.createElement('div');
+              qualityInfo.className = 'flex items-center gap-3 text-sm text-white font-medium mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]';
+              
+              if (link.resolution) {
+                const resolution = document.createElement('span');
+                resolution.className = 'font-semibold text-yellow-300';
+                resolution.textContent = link.resolution;
+                qualityInfo.appendChild(resolution);
+              }
+              
+              if (link.format_note) {
+                const formatNote = document.createElement('span');
+                formatNote.textContent = link.format_note;
+                qualityInfo.appendChild(formatNote);
+              }
+              
+              if (link.language && link.language !== 'Default') {
+                const language = document.createElement('span');
+                language.textContent = `🌐 ${link.language}`;
+                qualityInfo.appendChild(language);
+              }
+              
+              if (link.filesize_readable) {
+                const fileSize = document.createElement('span');
+                fileSize.textContent = `📦 ${link.filesize_readable}`;
+                qualityInfo.appendChild(fileSize);
+              }
+              
+              if (link.note) {
+                const note = document.createElement('span');
+                note.className = 'text-yellow-600 dark:text-yellow-400 text-xs';
+                note.textContent = `⚠️ ${link.note}`;
+                qualityInfo.appendChild(note);
+              }
+              
+              linkDetails.appendChild(qualityInfo);
+              
+              const formatId = document.createElement('div');
+              formatId.className = 'text-xs text-white/80 font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]';
+              formatId.textContent = `Format ID: ${link.format_id}`;
+              linkDetails.appendChild(formatId);
+              
+              linkInfo.appendChild(linkDetails);
+              
+              const downloadButton = document.createElement('a');
+              downloadButton.href = link.url;
+              downloadButton.download = '';
+              downloadButton.target = '_blank';
+              downloadButton.className = 'px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg';
+              downloadButton.textContent = '⬇️ Download';
+              
+              linkInfo.appendChild(downloadButton);
+              linkCard.appendChild(linkInfo);
+              linksList.appendChild(linkCard);
+            });
+            
+            formatSection.appendChild(linksList);
+            linksContainer.appendChild(formatSection);
+          }
+        } else {
+          linksContainer.innerHTML = `
+            <div class="glass dark:glass-dark border border-yellow-300 dark:border-yellow-700 rounded-2xl p-6 text-center card-3d">
+              <p class="text-yellow-300 mb-4 text-lg font-bold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">No matching formats found</p>
+              <p class="text-white mb-4 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">You can use our main downloader to download this content.</p>
+              <a href="/" class="inline-block px-6 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-xl font-semibold btn-3d shadow-lg">
+                🏠 Go to Main Downloader
+              </a>
+            </div>
+          `;
+        }
+        
+        document.getElementById('results').classList.remove('hidden');
+        
+      } catch (error) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = 'Error: ' + error.message;
+        document.getElementById('error').classList.remove('hidden');
+        
+        // Re-enable button on error
+        const fetchButton = document.getElementById('fetchButton');
+        const buttonText = document.getElementById('buttonText');
+        const buttonLoader = document.getElementById('buttonLoader');
+        fetchButton.disabled = false;
+        buttonText.classList.remove('hidden');
+        buttonLoader.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
+

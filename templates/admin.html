@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Universal Media Downloader</title>
+  <meta name="description" content="Admin control panel for managing downloaded files" />
+  
+  <link rel="icon" href="/static/images/icon.png" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <style>
+    * {
+      perspective: 1000px;
+    }
+    
+    .card-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-3d:hover {
+      transform: translateY(-8px) rotateX(2deg);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.5) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark .glass-dark {
+      background: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    .btn-3d {
+      transform-style: preserve-3d;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-3d:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-3d:active {
+      transform: translateY(-1px) scale(0.98);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotateX(0deg); }
+      50% { transform: translateY(-20px) rotateX(5deg); }
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    .dark .gradient-bg {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #16213e 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .text-3d {
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5),
+                   0 2px 0 rgba(255, 255, 255, 0.3),
+                   0 3px 5px rgba(0, 0, 0, 0.2),
+                   0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .file-card {
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+    }
+    
+    .file-card:hover {
+      transform: translateY(-5px) rotateX(1deg);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <div class="container mx-auto py-10 px-4" style="perspective: 1000px;">
+    <div class="max-w-6xl mx-auto glass dark:glass-dark rounded-3xl shadow-2xl p-8 space-y-6 card-3d floating">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-3d">
+            🔐 Admin Control Panel
+          </h1>
+          <p class="text-sm text-white mt-2 font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">Manage downloaded files on the server</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="/" class="glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-110 transition-transform btn-3d text-sm font-semibold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
+            🏠 Home
+          </a>
+          <button onclick="toggleDarkMode()" class="glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-110 transition-transform btn-3d text-sm font-semibold">
+            🌓
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="glass dark:glass-dark rounded-2xl p-6 text-center card-3d">
+          <div class="text-3xl font-bold text-yellow-300 mb-2">{{ total_files }}</div>
+          <div class="text-sm text-white/90 font-medium">Total Files</div>
+        </div>
+        <div class="glass dark:glass-dark rounded-2xl p-6 text-center card-3d">
+          <div class="text-3xl font-bold text-green-300 mb-2">{{ total_size }}</div>
+          <div class="text-sm text-white/90 font-medium">Total Size</div>
+        </div>
+        <div class="glass dark:glass-dark rounded-2xl p-6 text-center card-3d">
+          <a href="/admin/requests" class="block w-full py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white rounded-xl font-semibold btn-3d">
+            📊 View Requests
+          </a>
+        </div>
+        <div class="glass dark:glass-dark rounded-2xl p-6 text-center card-3d">
+          <button onclick="refreshFiles()" class="w-full py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-xl font-semibold btn-3d">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Files List -->
+      <div class="space-y-4">
+        <h2 class="text-2xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Downloaded Files</h2>
+        
+        {% if files %}
+        <div class="space-y-3">
+          {% for file in files %}
+          <div class="glass dark:glass-dark rounded-2xl p-4 file-card" id="file-{{ loop.index }}">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="text-2xl">
+                    {% if file.name.endswith('.mp4') or file.name.endswith('.webm') or file.name.endswith('.mkv') %}
+                      🎥
+                    {% elif file.name.endswith('.mp3') or file.name.endswith('.m4a') or file.name.endswith('.aac') %}
+                      🎵
+                    {% elif file.name.endswith('.zip') %}
+                      📦
+                    {% else %}
+                      📄
+                    {% endif %}
+                  </span>
+                  <h3 class="text-lg font-bold text-white truncate drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">{{ file.name }}</h3>
+                </div>
+                <div class="flex flex-wrap gap-4 text-sm text-white/80 font-medium">
+                  <span>📦 Size: <span class="text-yellow-300">{{ file.size }}</span></span>
+                  <span>📅 Date: <span class="text-yellow-300">{{ file.date }}</span></span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <a href="/downloads/{{ file.name }}" 
+                   class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg hover:from-green-600 hover:to-emerald-700">
+                  ⬇️ Download
+                </a>
+                <button onclick="deleteFile('{{ file.name }}', {{ loop.index }})" 
+                        class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg hover:from-red-600 hover:to-rose-700">
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass dark:glass-dark rounded-2xl p-8 text-center card-3d">
+          <div class="text-6xl mb-4">📭</div>
+          <h3 class="text-xl font-bold text-white mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">No Files Found</h3>
+          <p class="text-white/80">No files have been downloaded yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-10 text-center text-sm text-white/80 drop-shadow">
+    <hr class="my-4 border-white/20">
+    <p>
+      &copy; 2025 Universal Media Downloader by <a href="https://snpsujon.me" class="text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Snp Sujon</a>.
+      <a href="/privacy" class="ml-2 text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Privacy Policy</a>
+    </p>
+  </footer>
+
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      
+      if (html.classList.contains('dark')) {
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const darkMode = localStorage.getItem('darkMode');
+      if (darkMode === 'enabled') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+
+    function refreshFiles() {
+      window.location.reload();
+    }
+
+    async function deleteFile(filename, index) {
+      if (!confirm(`Are you sure you want to delete "${filename}"?`)) {
+        return;
+      }
+
+      const fileCard = document.getElementById(`file-${index}`);
+      if (fileCard) {
+        fileCard.style.opacity = '0.5';
+        fileCard.style.pointerEvents = 'none';
+      }
+
+      try {
+        const response = await fetch('/admin/delete-file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ filename: filename })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          if (fileCard) {
+            fileCard.style.transition = 'all 0.3s ease';
+            fileCard.style.transform = 'translateX(-100%)';
+            setTimeout(() => {
+              fileCard.remove();
+              // Reload if no files left
+              const remainingFiles = document.querySelectorAll('.file-card').length;
+              if (remainingFiles === 0) {
+                setTimeout(() => window.location.reload(), 500);
+              }
+            }, 300);
+          } else {
+            window.location.reload();
+          }
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete file'));
+          if (fileCard) {
+            fileCard.style.opacity = '1';
+            fileCard.style.pointerEvents = 'auto';
+          }
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+        if (fileCard) {
+          fileCard.style.opacity = '1';
+          fileCard.style.pointerEvents = 'auto';
+        }
+      }
+    }
+  </script>
+</body>
+</html>
+

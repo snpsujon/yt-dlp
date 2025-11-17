@@ -5,10 +5,11 @@ from collections import defaultdict
 
 import pycountry
 import unicodedata
-from flask import request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint, render_template
 import yt_dlp
 from uuid import uuid4
 from downloader_global import DOWNLOAD_FOLDER, download_sessions
+from request_logger import log_request
 
 api_bp = Blueprint('api', __name__)
 
@@ -65,6 +66,15 @@ def api_download():
                 'quiet': True,
                 'merge_output_format': format_type if format_type in ['mp4', 'mkv', 'webm', 'mp3'] else None,
                 'cookiefile': 'app/cookies.txt',
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'web'],
+                        'player_skip': ['webpage'],
+                    }
+                },
+                'format_sort': ['res', 'ext:mp4:m4a'],
+                'format_sort_force': True,
             }
 
             if format_type == 'audio':
@@ -78,6 +88,16 @@ def api_download():
                 })
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                # Extract info first to log requests, then download
+                for url in urls:
+                    try:
+                        info = ydl.extract_info(url, download=False)
+                        # Log the request
+                        log_request(url, info, format_type, 'download')
+                    except Exception as e:
+                        print(f"Error extracting info for {url}: {e}")
+                
+                # Download all URLs
                 ydl.download(urls)
 
             # After download, find the latest file
@@ -129,6 +149,15 @@ def get_direct_links_all_format():
             'quiet': True,
             'skip_download': True,
             'cookiefile': 'app/cookies.txt',
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'web'],
+                    'player_skip': ['webpage'],
+                }
+            },
+            'format_sort': ['res', 'ext:mp4:m4a'],
+            'format_sort_force': True,
         }
 
         direct_links = []
@@ -199,6 +228,12 @@ def get_language_name(code):
         return "Default"
 
 
+@api_bp.route('/direct-links', methods=['GET'])
+def direct_links_view():
+    """Render the direct links view page"""
+    return render_template('direct_links.html')
+
+
 @api_bp.route('/api/direct-links', methods=['GET', 'POST'])
 def get_direct_links():
     if request.method == 'POST':
@@ -213,23 +248,88 @@ def get_direct_links():
     if format_type not in ('video', 'audio'):
         return jsonify({"error": "Format must be 'video' or 'audio'"}), 400
 
+    # Try to extract info first for logging (even if it fails later)
+    info = None
+    extraction_error = None
+    
     try:
-        ydl_opts = {
-            'quiet': True,
-            'skip_download': True,
-            'cookiefile': 'app/cookies.txt',
-            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36',
-            # 'force_insecure': True,
-            # 'extractor_args': {'youtube': {'player_client': ['web']}},
+        # Try multiple configurations to handle YouTube's changing system
+        configs = [
+            {
+                'quiet': True,
+                'skip_download': True,
+                'cookiefile': 'app/cookies.txt',
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android', 'web', 'ios'],
+                        'player_skip': ['webpage'],
+                    }
+                },
+                'format_sort': ['res', 'ext:mp4:m4a'],
+                'format_sort_force': True,
+                'no_warnings': False,
+            },
+            {
+                'quiet': True,
+                'skip_download': True,
+                'cookiefile': 'app/cookies.txt',
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'extractor_args': {
+                    'youtube': {
+                        'player_client': ['android'],
+                    }
+                },
+            },
+            {
+                'quiet': True,
+                'skip_download': True,
+                'cookiefile': 'app/cookies.txt',
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            }
+        ]
+        
+        for i, ydl_opts in enumerate(configs):
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    # Log the request immediately after successful extraction
+                    log_request(url, info, format_type, 'direct-links')
+                    break  # If successful, break out of the loop
+            except Exception as e:
+                extraction_error = str(e)
+                if i == len(configs) - 1:  # If this is the last config
+                    # Try to log even if extraction failed
+                    try:
+                        # Try one more time with minimal config just to get basic info
+                        minimal_config = {
+                            'quiet': True,
+                            'skip_download': True,
+                        }
+                        with yt_dlp.YoutubeDL(minimal_config) as ydl:
+                            try:
+                                info = ydl.extract_info(url, download=False)
+                                log_request(url, info, format_type, 'direct-links')
+                            except:
+                                # If still fails, log with minimal info
+                                log_request(url, None, format_type, 'direct-links')
+                    except:
+                        # Log with no info if all extraction attempts fail
+                        log_request(url, None, format_type, 'direct-links')
+                    raise e
+                continue  # Try next config
 
-        }
+        if info is None:
+            return jsonify({"success": False, "error": "Could not extract video information with any configuration"}), 500
 
         grouped_links = defaultdict(list)
         v_info = defaultdict(list)
 
         def extract_urls(info_dict):
             formats = info_dict.get('formats', [])
-            for fmt in formats:
+            print(f"DEBUG: Total formats found: {len(formats)}")
+            for i, fmt in enumerate(formats):
+                print(f"DEBUG FORMAT {i}: ext={fmt.get('ext')}, vcodec={fmt.get('vcodec')}, acodec={fmt.get('acodec')}, format_id={fmt.get('format_id')}, resolution={fmt.get('resolution')}")
                 ext = fmt.get('ext')
                 url_ = fmt.get('url')
                 if not url_ or not ext:
@@ -237,21 +337,24 @@ def get_direct_links():
 
                 # Filtering by format type
                 if format_type == 'video':
-                    # skip audio only formats
+                    # For video, we'll be more flexible and include formats that might work
+                    # Skip pure audio formats
                     if fmt.get('vcodec') == 'none':
                         continue
-                    # ✅ new line: skip video-only formats without audio
-                    # if fmt.get('acodec') == 'none':
-                    #     continue
-                    # Accept common video formats (mp4, webm, mkv)
-                    if ext not in ['mp4', 'webm', 'mkv']:
+                    # Accept common video formats (mp4, webm, mkv) and also include formats without audio
+                    if ext not in ['mp4', 'webm', 'mkv', '3gp', 'flv']:
                         continue
                 else:  # audio
-                    # skip video only formats
+                    # For audio, skip video-only formats (no audio)
                     if fmt.get('acodec') == 'none':
                         continue
-                    # Accept common audio formats
+                    # Debug: Print all audio formats to see what's available
+                    print(f"DEBUG AUDIO: ext={ext}, vcodec={fmt.get('vcodec')}, acodec={fmt.get('acodec')}, format_id={fmt.get('format_id')}")
+                    # Accept only pure audio formats (not video+audio combinations)
                     if ext not in ['mp3', 'm4a', 'webm', 'aac', 'opus']:
+                        continue
+                    # Skip formats that have video codec (video+audio combinations)
+                    if fmt.get('vcodec') != 'none':
                         continue
 
                 # Determine resolution or quality label
@@ -287,31 +390,30 @@ def get_direct_links():
 
                 grouped_links[ext].append(link_info)
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            if 'entries' in info:  # playlist
-                for entry in info['entries']:
-                    extract_urls(entry)
-            else:
-                extract_urls(info)
+        # Extract URLs from the successfully obtained info
+        if 'entries' in info:  # playlist
+            for entry in info['entries']:
+                extract_urls(entry)
+        else:
+            extract_urls(info)
 
-            v_info['title'] = (info.get('title', 'Unknown Title'))
-            v_info['description'] = (info.get('description', ''))
-            v_info['channel'] = (info.get('channel', ''))
-            v_info['channel_id'] = (info.get('channel_id', ''))
-            v_info['channel_url'] = (info.get('channel_url', ''))
-            v_info['channel_subscriber'] = (info.get('channel_follower_count', ''))
-            v_info['comment_count'] = (info.get('comment_count', ''))
-            v_info['video_id'] = (info.get('display_id', ''))
-            v_info['duration'] = (info.get('duration_string', ''))
-            v_info['thumbnail'] = (info.get('thumbnail', ''))
-            v_info['upload_date'] = (info.get('upload_date', ''))
-            v_info['view_count'] = (info.get('view_count', ''))
-            v_info['uploader_id'] = (info.get('uploader_id', ''))
-            v_info['uploader'] = (info.get('uploader', ''))
-            v_info['platform'] = (info.get('extractor_key', ''))
-            v_info['like_count'] = (info.get('like_count', ''))
-            v_info['concurrent_view_count'] = (info.get('concurrent_view_count', ''))
+        v_info['title'] = (info.get('title', 'Unknown Title'))
+        v_info['description'] = (info.get('description', ''))
+        v_info['channel'] = (info.get('channel', ''))
+        v_info['channel_id'] = (info.get('channel_id', ''))
+        v_info['channel_url'] = (info.get('channel_url', ''))
+        v_info['channel_subscriber'] = (info.get('channel_follower_count', ''))
+        v_info['comment_count'] = (info.get('comment_count', ''))
+        v_info['video_id'] = (info.get('display_id', ''))
+        v_info['duration'] = (info.get('duration_string', ''))
+        v_info['thumbnail'] = (info.get('thumbnail', ''))
+        v_info['upload_date'] = (info.get('upload_date', ''))
+        v_info['view_count'] = (info.get('view_count', ''))
+        v_info['uploader_id'] = (info.get('uploader_id', ''))
+        v_info['uploader'] = (info.get('uploader', ''))
+        v_info['platform'] = (info.get('extractor_key', ''))
+        v_info['like_count'] = (info.get('like_count', ''))
+        v_info['concurrent_view_count'] = (info.get('concurrent_view_count', ''))
 
 
         if not grouped_links:
@@ -325,5 +427,11 @@ def get_direct_links():
 
 
     except Exception as e:
+        # Log the request even if there's an error (if not already logged)
+        if info is None:
+            try:
+                log_request(url, None, format_type, 'direct-links')
+            except:
+                pass
         return jsonify({"success": False, "error": str(e)}), 500
 
