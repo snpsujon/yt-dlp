@@ -136,7 +136,7 @@
       </div>
 
       <!-- Statistics -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="glass dark:glass-dark rounded-2xl p-6 text-center card-3d">
           <div class="text-3xl font-bold text-yellow-300 mb-2">{{ total_requests }}</div>
           <div class="text-sm text-white/90 font-medium">Total Requests</div>
@@ -151,47 +151,82 @@
             💾 Export JSON
           </button>
         </div>
+        <div class="glass dark:glass-dark rounded-2xl p-6 text-center card-3d">
+          <button onclick="resetAllLogs()" class="w-full py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-semibold btn-3d">
+            🗑️ Reset All
+          </button>
+        </div>
       </div>
 
       <!-- Requests List -->
       <div class="space-y-4">
-        <h2 class="text-2xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Request History</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Request History</h2>
+          {% if requests %}
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer glass dark:glass-dark px-4 py-2 rounded-xl hover:scale-105 transition-transform">
+              <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="w-5 h-5 rounded cursor-pointer">
+              <span class="text-sm font-semibold text-white">Select All</span>
+            </label>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- Bulk Action Bar -->
+        <div id="bulkActionBar" class="hidden glass dark:glass-dark rounded-2xl p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="selectedCount" class="text-white font-semibold">0 requests selected</span>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="clearSelection()" class="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg hover:from-gray-600 hover:to-gray-700">
+              ✖️ Clear
+            </button>
+            <button onclick="bulkDelete()" class="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg hover:from-red-600 hover:to-rose-700">
+              🗑️ Delete Selected
+            </button>
+          </div>
+        </div>
         
         {% if requests %}
         <div class="space-y-3 max-h-[600px] overflow-y-auto">
           {% for req in requests %}
-          <div class="glass dark:glass-dark rounded-2xl p-6 request-card">
+          <div class="glass dark:glass-dark rounded-2xl p-6 request-card" id="request-{{ req.id }}" data-request-id="{{ req.id }}">
             <div class="space-y-4">
               <!-- Header -->
               <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <span class="text-3xl">
-                      {% if req.request_type == 'download' %}
-                        ⬇️
-                      {% else %}
-                        🔗
-                      {% endif %}
-                    </span>
-                    <div>
-                      <h3 class="text-xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
-                        {{ req.video_info.title }}
-                      </h3>
-                      <div class="flex flex-wrap gap-2 mt-1">
-                        <span class="px-2 py-1 bg-indigo-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
-                          {{ req.request_type|upper }}
-                        </span>
-                        <span class="px-2 py-1 bg-purple-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
-                          {{ req.format_type|upper }}
-                        </span>
-                        <span class="px-2 py-1 bg-pink-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
-                          {{ req.video_info.platform }}
-                        </span>
+                <div class="flex items-center gap-3 flex-1">
+                  <input type="checkbox" class="request-checkbox w-5 h-5 rounded cursor-pointer flex-shrink-0" 
+                         data-request-id="{{ req.id }}" 
+                         onchange="updateBulkActionBar()">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-3 mb-2">
+                      <span class="text-3xl flex-shrink-0">
+                        {% if req.request_type == 'download' %}
+                          ⬇️
+                        {% else %}
+                          🔗
+                        {% endif %}
+                      </span>
+                      <div class="flex-1 min-w-0">
+                        <h3 class="text-xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
+                          {{ req.video_info.title }}
+                        </h3>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                          <span class="px-2 py-1 bg-indigo-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
+                            {{ req.request_type|upper }}
+                          </span>
+                          <span class="px-2 py-1 bg-purple-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
+                            {{ req.format_type|upper }}
+                          </span>
+                          <span class="px-2 py-1 bg-pink-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
+                            {{ req.video_info.platform }}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="text-right">
+                <div class="text-right flex-shrink-0">
                   <div class="text-sm text-white/80 font-medium">{{ req.timestamp }}</div>
                   <div class="text-xs text-white/60 mt-1">ID: {{ req.id }}</div>
                 </div>
@@ -292,8 +327,161 @@
     });
 
     function exportLogs() {
-      // This would need a backend endpoint to download the JSON file
       window.location.href = '/admin/export-logs';
+    }
+
+    function toggleSelectAll() {
+      const selectAllCheckbox = document.getElementById('selectAll');
+      const requestCheckboxes = document.querySelectorAll('.request-checkbox');
+      
+      requestCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+      
+      updateBulkActionBar();
+    }
+
+    function updateBulkActionBar() {
+      const requestCheckboxes = document.querySelectorAll('.request-checkbox:checked');
+      const bulkActionBar = document.getElementById('bulkActionBar');
+      const selectedCount = document.getElementById('selectedCount');
+      const selectAllCheckbox = document.getElementById('selectAll');
+      
+      const count = requestCheckboxes.length;
+      
+      if (count > 0) {
+        bulkActionBar.classList.remove('hidden');
+        selectedCount.textContent = `${count} request${count !== 1 ? 's' : ''} selected`;
+      } else {
+        bulkActionBar.classList.add('hidden');
+      }
+      
+      // Update select all checkbox state
+      const allCheckboxes = document.querySelectorAll('.request-checkbox');
+      if (allCheckboxes.length > 0) {
+        selectAllCheckbox.checked = count === allCheckboxes.length;
+        selectAllCheckbox.indeterminate = count > 0 && count < allCheckboxes.length;
+      }
+    }
+
+    function clearSelection() {
+      const requestCheckboxes = document.querySelectorAll('.request-checkbox');
+      const selectAllCheckbox = document.getElementById('selectAll');
+      
+      requestCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      selectAllCheckbox.checked = false;
+      selectAllCheckbox.indeterminate = false;
+      
+      updateBulkActionBar();
+    }
+
+    async function bulkDelete() {
+      const requestCheckboxes = document.querySelectorAll('.request-checkbox:checked');
+      const requestIds = Array.from(requestCheckboxes).map(cb => parseInt(cb.dataset.requestId));
+      
+      if (requestIds.length === 0) {
+        alert('No requests selected');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to delete ${requestIds.length} request(s)?\n\nThis action cannot be undone.`)) {
+        return;
+      }
+
+      // Disable checkboxes and show loading state
+      requestCheckboxes.forEach(checkbox => {
+        checkbox.disabled = true;
+        const requestCard = document.getElementById(`request-${checkbox.dataset.requestId}`);
+        if (requestCard) {
+          requestCard.style.opacity = '0.5';
+          requestCard.style.pointerEvents = 'none';
+        }
+      });
+
+      try {
+        const response = await fetch('/admin/delete-requests-bulk', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ request_ids: requestIds })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Remove successfully deleted requests
+          requestIds.forEach(requestId => {
+            const requestCard = document.getElementById(`request-${requestId}`);
+            if (requestCard) {
+              requestCard.style.transition = 'all 0.3s ease';
+              requestCard.style.transform = 'translateX(-100%)';
+              setTimeout(() => {
+                requestCard.remove();
+              }, 300);
+            }
+          });
+          
+          // Clear selection and reload if no requests left
+          setTimeout(() => {
+            clearSelection();
+            const remainingRequests = document.querySelectorAll('.request-card').length;
+            if (remainingRequests === 0) {
+              window.location.reload();
+            }
+          }, 500);
+        } else {
+          alert('Error: ' + (data.error || 'Failed to delete requests'));
+          // Re-enable checkboxes
+          requestCheckboxes.forEach(checkbox => {
+            checkbox.disabled = false;
+            const requestCard = document.getElementById(`request-${checkbox.dataset.requestId}`);
+            if (requestCard) {
+              requestCard.style.opacity = '1';
+              requestCard.style.pointerEvents = 'auto';
+            }
+          });
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+        // Re-enable checkboxes
+        requestCheckboxes.forEach(checkbox => {
+          checkbox.disabled = false;
+          const requestCard = document.getElementById(`request-${checkbox.dataset.requestId}`);
+          if (requestCard) {
+            requestCard.style.opacity = '1';
+            requestCard.style.pointerEvents = 'auto';
+          }
+        });
+      }
+    }
+
+    async function resetAllLogs() {
+      if (!confirm('Are you sure you want to reset ALL request logs?\n\nThis will permanently delete all logged requests. This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/admin/reset-logs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('All logs have been cleared successfully!');
+          window.location.reload();
+        } else {
+          alert('Error: ' + (data.error || 'Failed to reset logs'));
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
     }
   </script>
 </body>

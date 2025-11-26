@@ -254,6 +254,7 @@ def get_direct_links():
     
     try:
         # Try multiple configurations to handle YouTube's changing system
+        # Prefer formats that are more likely to be direct downloads (not m3u8)
         configs = [
             {
                 'quiet': True,
@@ -266,7 +267,8 @@ def get_direct_links():
                         'player_skip': ['webpage'],
                     }
                 },
-                'format_sort': ['res', 'ext:mp4:m4a'],
+                # Prefer formats with http/https protocol (direct downloads) over m3u8
+                'format_sort': ['+protocol:http', '+protocol:https', 'res', 'ext:mp4:m4a'],
                 'format_sort_force': True,
                 'no_warnings': False,
             },
@@ -328,11 +330,37 @@ def get_direct_links():
         def extract_urls(info_dict):
             formats = info_dict.get('formats', [])
             print(f"DEBUG: Total formats found: {len(formats)}")
+            
+            # Count formats before and after filtering for debugging
+            total_before_filter = 0
+            m3u8_count = 0
+            valid_count = 0
+            
             for i, fmt in enumerate(formats):
-                print(f"DEBUG FORMAT {i}: ext={fmt.get('ext')}, vcodec={fmt.get('vcodec')}, acodec={fmt.get('acodec')}, format_id={fmt.get('format_id')}, resolution={fmt.get('resolution')}")
                 ext = fmt.get('ext')
                 url_ = fmt.get('url')
+                protocol = fmt.get('protocol', '').lower()
+                
                 if not url_ or not ext:
+                    continue
+                
+                total_before_filter += 1
+                print(f"DEBUG FORMAT {i}: ext={ext}, vcodec={fmt.get('vcodec')}, acodec={fmt.get('acodec')}, format_id={fmt.get('format_id')}, resolution={fmt.get('resolution')}, protocol={protocol}")
+                
+                # Filter out m3u8/HLS formats - these are streaming playlists, not direct download links
+                # Only filter if it's clearly an m3u8 file, not DASH segments which can be direct downloads
+                url_lower = url_.lower()
+                is_m3u8 = (
+                    '.m3u8' in url_lower or 
+                    ext.lower() == 'm3u8' or 
+                    protocol in ['m3u8', 'm3u8_native'] or
+                    'index.m3u8' in url_lower or
+                    url_lower.endswith('.m3u8')
+                )
+                
+                if is_m3u8:
+                    m3u8_count += 1
+                    print(f"DEBUG: Skipping m3u8/HLS format: format_id={fmt.get('format_id')}, protocol={protocol}, ext={ext}")
                     continue
 
                 # Filtering by format type
@@ -388,7 +416,13 @@ def get_direct_links():
                 if fmt.get('vcodec') != 'none' and fmt.get('acodec') == 'none':
                     link_info['note'] = 'Video Only (No Audio)'
 
+                valid_count += 1
                 grouped_links[ext].append(link_info)
+            
+            print(f"DEBUG SUMMARY: Total formats={total_before_filter}, M3U8 filtered={m3u8_count}, Valid formats={valid_count}")
+            
+            if valid_count == 0 and total_before_filter > 0:
+                print(f"WARNING: All {total_before_filter} formats were filtered out (all were m3u8)")
 
         # Extract URLs from the successfully obtained info
         if 'entries' in info:  # playlist
@@ -417,7 +451,15 @@ def get_direct_links():
 
 
         if not grouped_links:
-            return jsonify({"success": False, "error": "No matching formats found"}), 404
+            # Check if we have formats but they were all filtered
+            total_formats = len(info.get('formats', []))
+            if total_formats > 0:
+                return jsonify({
+                    "success": False, 
+                    "error": "No direct download formats available. YouTube may only be providing streaming (m3u8) formats for this video. Please use the main downloader instead."
+                }), 404
+            else:
+                return jsonify({"success": False, "error": "No matching formats found"}), 404
 
         return jsonify({
             "success": True,

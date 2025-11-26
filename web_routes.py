@@ -227,6 +227,42 @@ def delete_file():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@web_bp.route('/admin/delete-files-bulk', methods=['POST'])
+def delete_files_bulk():
+    import os
+    from flask import request, jsonify
+    from downloader_global import DOWNLOAD_FOLDER
+    
+    filenames = request.json.get('filenames', [])
+    if not filenames or not isinstance(filenames, list):
+        return jsonify({"success": False, "error": "Filenames array is required"}), 400
+    
+    deleted = []
+    failed = []
+    
+    for filename in filenames:
+        if not filename:
+            continue
+            
+        file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+        
+        if not os.path.exists(file_path):
+            failed.append({"filename": filename, "error": "File not found"})
+            continue
+        
+        try:
+            os.remove(file_path)
+            deleted.append(filename)
+        except Exception as e:
+            failed.append({"filename": filename, "error": str(e)})
+    
+    return jsonify({
+        "success": len(failed) == 0,
+        "deleted": deleted,
+        "failed": failed,
+        "message": f"Deleted {len(deleted)} file(s)" + (f", {len(failed)} failed" if failed else "")
+    })
+
 @web_bp.route('/admin/requests')
 def admin_requests():
     import json
@@ -256,6 +292,64 @@ def export_logs():
         return send_file(LOG_FILE, as_attachment=True, download_name='request_logs.json')
     else:
         return "No logs file found", 404
+
+@web_bp.route('/admin/reset-logs', methods=['POST'])
+def reset_logs():
+    import json
+    import os
+    from request_logger import LOG_FILE
+    
+    try:
+        # Clear the log file by writing an empty array
+        with open(LOG_FILE, 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2, ensure_ascii=False)
+        return jsonify({"success": True, "message": "All logs have been cleared"})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@web_bp.route('/admin/delete-requests-bulk', methods=['POST'])
+def delete_requests_bulk():
+    import json
+    import os
+    from request_logger import LOG_FILE
+    
+    request_ids = request.json.get('request_ids', [])
+    if not request_ids or not isinstance(request_ids, list):
+        return jsonify({"success": False, "error": "Request IDs array is required"}), 400
+    
+    try:
+        # Load existing logs
+        logs = []
+        if os.path.exists(LOG_FILE):
+            try:
+                with open(LOG_FILE, 'r', encoding='utf-8') as f:
+                    logs = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                logs = []
+        
+        # Convert request_ids to integers for comparison
+        request_ids_int = [int(rid) for rid in request_ids]
+        
+        # Filter out the requests to delete
+        original_count = len(logs)
+        logs = [log for log in logs if log.get('id') not in request_ids_int]
+        deleted_count = original_count - len(logs)
+        
+        # Re-index the remaining logs
+        for idx, log in enumerate(logs, start=1):
+            log['id'] = idx
+        
+        # Save updated logs
+        with open(LOG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(logs, f, indent=2, ensure_ascii=False)
+        
+        return jsonify({
+            "success": True,
+            "deleted": deleted_count,
+            "message": f"Deleted {deleted_count} request(s)"
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @web_bp.route('/get_audio_formats', methods=['POST'])
 def get_formats():
