@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - Universal Media Downloader</title>
+  <meta name="description" content="Admin login page" />
+  
+  <link rel="icon" href="/static/images/icon.png" type="image/x-icon" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/images/icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <style>
+    * {
+      perspective: 1000px;
+    }
+    
+    .card-3d {
+      transform-style: preserve-3d;
+      transition: box-shadow 0.3s ease;
+    }
+    
+    .card-3d:hover {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.5) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dark .glass-dark {
+      background: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7) !important;
+    }
+    
+    .btn-3d {
+      transform-style: preserve-3d;
+      position: relative;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+      transition: box-shadow 0.3s ease;
+    }
+    
+    .btn-3d:hover {
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+    }
+    
+    .dark .gradient-bg {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #16213e 100%);
+    }
+    
+    .text-3d {
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5),
+                   0 2px 0 rgba(255, 255, 255, 0.3),
+                   0 3px 5px rgba(0, 0, 0, 0.2),
+                   0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-3d {
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .dark .input-3d {
+      background: rgba(0, 0, 0, 0.4) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .input-3d:focus {
+      transform: translateZ(10px);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(99, 102, 241, 0.5), 0 4px 12px rgba(99, 102, 241, 0.3);
+      background: rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .dark .input-3d:focus {
+      background: rgba(0, 0, 0, 0.5) !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(99, 102, 241, 0.6), 0 4px 12px rgba(99, 102, 241, 0.4) !important;
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+  <div class="container mx-auto py-10 px-4" style="perspective: 1000px;">
+    <div class="max-w-md mx-auto glass dark:glass-dark rounded-3xl shadow-2xl p-8 space-y-6 card-3d">
+      <!-- Header -->
+      <div class="text-center">
+        <h1 class="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent text-3d mb-2">
+          🔐 Admin Login
+        </h1>
+        <p class="text-sm text-white/80 font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]">
+          Enter password to access admin panel
+        </p>
+      </div>
+
+      <!-- Error Message -->
+      {% if error %}
+      <div class="glass dark:glass-dark border border-red-300 dark:border-red-700 rounded-2xl p-4">
+        <p class="text-red-300 font-semibold text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+          ⚠️ {{ error }}
+        </p>
+      </div>
+      {% endif %}
+
+      <!-- Login Form -->
+      <form method="POST" action="/admin/login" class="space-y-6">
+        <div class="space-y-2">
+          <label for="password" class="block font-bold text-lg text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            🔑 Password
+          </label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            required
+            autofocus
+            autocomplete="current-password"
+            class="w-full p-4 rounded-2xl input-3d glass dark:glass-dark focus:outline-none text-white font-semibold placeholder-white/70 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+            placeholder="Enter admin password"
+          />
+        </div>
+
+        <button 
+          type="submit"
+          class="w-full py-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-2xl font-bold text-lg btn-3d shadow-2xl">
+          🚀 Login
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="text-center">
+        <a href="/" class="text-yellow-300 hover:text-yellow-200 hover:underline text-sm font-semibold drop-shadow">
+          🏠 Back to Home
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-10 text-center text-sm text-white/80 drop-shadow">
+    <hr class="my-4 border-white/20">
+    <p>
+      &copy; 2025 Universal Media Downloader by <a href="https://snpsujon.me" class="text-yellow-300 hover:text-yellow-200 hover:underline drop-shadow">Snp Sujon</a>.
+    </p>
+  </footer>
+
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      
+      if (html.classList.contains('dark')) {
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const darkMode = localStorage.getItem('darkMode');
+      if (darkMode === 'enabled') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    });
+  </script>
+</body>
+</html>
+

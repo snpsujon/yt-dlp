@@ -2,11 +2,26 @@ import time
 import os
 import threading
 import zipfile
+from functools import wraps
 from flask import  render_template, request, jsonify, session, Blueprint, redirect, url_for, send_file
 import yt_dlp
 from uuid import uuid4
 from downloader_global import DOWNLOAD_FOLDER,download_sessions
 from request_logger import log_request
+
+# Admin password - change this to your desired password
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+
+def admin_required(f):
+    """Decorator to require admin authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_authenticated'):
+            if request.is_json:
+                return jsonify({"success": False, "error": "Authentication required"}), 401
+            return redirect(url_for('web.admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 
@@ -193,7 +208,24 @@ def get_progress():
 def privacy_policy():
     return render_template('privacy.html')
 
+@web_bp.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        password = request.form.get('password', '')
+        if password == ADMIN_PASSWORD:
+            session['admin_authenticated'] = True
+            return redirect(url_for('web.admin_panel'))
+        else:
+            return render_template('admin_login.html', error='Invalid password. Please try again.')
+    return render_template('admin_login.html')
+
+@web_bp.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_authenticated', None)
+    return redirect(url_for('web.admin_login'))
+
 @web_bp.route('/admin')
+@admin_required
 def admin_panel():
     import os
     from datetime import datetime
@@ -237,6 +269,7 @@ def admin_panel():
     return render_template('admin.html', files=files_info, total_files=len(files_info), total_size=total_size_str)
 
 @web_bp.route('/admin/delete-file', methods=['POST'])
+@admin_required
 def delete_file():
     import os
     from flask import request, jsonify
@@ -258,6 +291,7 @@ def delete_file():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @web_bp.route('/admin/delete-files-bulk', methods=['POST'])
+@admin_required
 def delete_files_bulk():
     import os
     from flask import request, jsonify
@@ -294,6 +328,7 @@ def delete_files_bulk():
     })
 
 @web_bp.route('/admin/requests')
+@admin_required
 def admin_requests():
     import json
     import os
@@ -312,6 +347,7 @@ def admin_requests():
     return render_template('admin_requests.html', requests=logs, total_requests=len(logs))
 
 @web_bp.route('/admin/export-logs')
+@admin_required
 def export_logs():
     import json
     import os
@@ -324,6 +360,7 @@ def export_logs():
         return "No logs file found", 404
 
 @web_bp.route('/admin/reset-logs', methods=['POST'])
+@admin_required
 def reset_logs():
     import json
     import os
@@ -338,6 +375,7 @@ def reset_logs():
         return jsonify({"success": False, "error": str(e)}), 500
 
 @web_bp.route('/admin/delete-requests-bulk', methods=['POST'])
+@admin_required
 def delete_requests_bulk():
     import json
     import os
