@@ -41,6 +41,25 @@ def api_download():
     quality = request.form.get('quality') or "best"
     session_id = request.headers.get('X-Session-ID') or str(uuid4())
 
+    # Capture request data before starting background thread
+    def get_client_ip():
+        if request.headers.get('X-Forwarded-For'):
+            return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+        elif request.headers.get('X-Real-IP'):
+            return request.headers.get('X-Real-IP')
+        else:
+            return request.remote_addr
+    
+    request_data = {
+        'ip_address': get_client_ip(),
+        'user_agent': request.headers.get('User-Agent', 'Unknown'),
+        'referer': request.headers.get('Referer', ''),
+        'is_extension': request.headers.get('X-Extension-Request') == 'true',
+        'extension_version': request.headers.get('X-Extension-Version', ''),
+        'platform': request.headers.get('X-Platform', ''),
+        'language': request.headers.get('X-Language', '')
+    }
+
     download_sessions[session_id] = {
         "percent": "0%",
         "status": "Downloading",
@@ -92,10 +111,20 @@ def api_download():
                 for url in urls:
                     try:
                         info = ydl.extract_info(url, download=False)
-                        # Log the request
-                        log_request(url, info, format_type, 'download')
+                        # Log the request with captured request data
+                        try:
+                            log_request(url, info, format_type, 'download', request_data=request_data)
+                        except Exception as log_err:
+                            print(f"Error in log_request: {log_err}")
+                            import traceback
+                            traceback.print_exc()
                     except Exception as e:
                         print(f"Error extracting info for {url}: {e}")
+                        # Try to log even if extraction fails
+                        try:
+                            log_request(url, None, format_type, 'download', request_data=request_data)
+                        except Exception as log_err:
+                            print(f"Error logging failed request: {log_err}")
                 
                 # Download all URLs
                 ydl.download(urls)

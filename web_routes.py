@@ -44,6 +44,25 @@ def download_video():
     if not urls:
         return render_template('index.html', error="Please enter at least one URL.", status="Idle")
 
+    # Capture request data before starting background thread
+    def get_client_ip():
+        if request.headers.get('X-Forwarded-For'):
+            return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+        elif request.headers.get('X-Real-IP'):
+            return request.headers.get('X-Real-IP')
+        else:
+            return request.remote_addr
+    
+    request_data = {
+        'ip_address': get_client_ip(),
+        'user_agent': request.headers.get('User-Agent', 'Unknown'),
+        'referer': request.headers.get('Referer', ''),
+        'is_extension': request.headers.get('X-Extension-Request') == 'true',
+        'extension_version': request.headers.get('X-Extension-Version', ''),
+        'platform': request.headers.get('X-Platform', ''),
+        'language': request.headers.get('X-Language', '')
+    }
+
     download_sessions[session_id] = {
         "percent": "0%",
         "status": "Downloading",
@@ -92,8 +111,13 @@ def download_video():
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     try:
                         info = ydl.extract_info(url, download=True)
-                        # Log the request
-                        log_request(url, info, format_type, 'download')
+                        # Log the request with captured request data
+                        try:
+                            log_request(url, info, format_type, 'download', request_data=request_data)
+                        except Exception as log_err:
+                            print(f"Error in log_request: {log_err}")
+                            import traceback
+                            traceback.print_exc()
                     except Exception as e:
                         # Try to extract info without downloading for logging
                         try:
@@ -101,10 +125,16 @@ def download_video():
                             ydl_opts_log['skip_download'] = True
                             with yt_dlp.YoutubeDL(ydl_opts_log) as ydl_log:
                                 info = ydl_log.extract_info(url, download=False)
-                                log_request(url, info, format_type, 'download')
+                                try:
+                                    log_request(url, info, format_type, 'download', request_data=request_data)
+                                except Exception as log_err:
+                                    print(f"Error in log_request: {log_err}")
                         except:
                             # Log with minimal info if extraction fails
-                            log_request(url, None, format_type, 'download')
+                            try:
+                                log_request(url, None, format_type, 'download', request_data=request_data)
+                            except Exception as log_err:
+                                print(f"Error logging failed request: {log_err}")
                         raise e
                     filesize = info.get('filesize') or info.get('filesize_approx')
                     if filesize:

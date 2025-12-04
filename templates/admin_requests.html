@@ -18,11 +18,10 @@
     
     .card-3d {
       transform-style: preserve-3d;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: box-shadow 0.3s ease;
     }
     
     .card-3d:hover {
-      transform: translateY(-8px) rotateX(2deg);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
     
@@ -56,41 +55,21 @@
     
     .btn-3d {
       transform-style: preserve-3d;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+      transition: box-shadow 0.3s ease;
     }
     
     .btn-3d:hover {
-      transform: translateY(-3px) scale(1.02);
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
-    }
-    
-    .floating {
-      animation: float 6s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotateX(0deg); }
-      50% { transform: translateY(-20px) rotateX(5deg); }
     }
     
     .gradient-bg {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
     }
     
     .dark .gradient-bg {
       background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #16213e 100%);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
-    }
-    
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
     }
     
     .text-3d {
@@ -102,18 +81,17 @@
     
     .request-card {
       transform-style: preserve-3d;
-      transition: all 0.3s ease;
+      transition: box-shadow 0.3s ease;
     }
     
     .request-card:hover {
-      transform: translateY(-5px) rotateX(1deg);
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     }
   </style>
 </head>
 <body class="gradient-bg min-h-screen text-white">
   <div class="container mx-auto py-10 px-4" style="perspective: 1000px;">
-    <div class="max-w-7xl mx-auto glass dark:glass-dark rounded-3xl shadow-2xl p-8 space-y-6 card-3d floating">
+    <div class="max-w-7xl mx-auto glass dark:glass-dark rounded-3xl shadow-2xl p-8 space-y-6 card-3d">
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
@@ -221,6 +199,16 @@
                           <span class="px-2 py-1 bg-pink-600/30 rounded-lg text-xs text-yellow-300 font-semibold">
                             {{ req.video_info.platform }}
                           </span>
+                          {% if req.is_extension %}
+                          <span class="px-2 py-1 bg-green-600/40 rounded-lg text-xs text-green-300 font-semibold flex items-center gap-1">
+                            <span>🔌</span>
+                            <span>Extension v{{ req.extension_version }}</span>
+                          </span>
+                          {% else %}
+                          <span class="px-2 py-1 bg-blue-600/30 rounded-lg text-xs text-blue-300 font-semibold">
+                            🌐 Web
+                          </span>
+                          {% endif %}
                         </div>
                       </div>
                     </div>
@@ -228,6 +216,13 @@
                 </div>
                 <div class="text-right flex-shrink-0">
                   <div class="text-sm text-white/80 font-medium">{{ req.timestamp }}</div>
+                  <div class="text-xs text-yellow-400/80 mt-1">
+                    {% if req.timezone %}
+                      {{ req.timezone }}
+                    {% else %}
+                      BD Time (UTC+6)
+                    {% endif %}
+                  </div>
                   <div class="text-xs text-white/60 mt-1">ID: {{ req.id }}</div>
                 </div>
               </div>
@@ -237,6 +232,10 @@
                 <div>
                   <span class="text-white/70">🌐 IP Address:</span>
                   <span class="text-yellow-300 font-semibold ml-2">{{ req.ip_address }}</span>
+                </div>
+                <div>
+                  <span class="text-white/70">🌍 Browser:</span>
+                  <span class="text-yellow-300 font-semibold ml-2">{{ req.browser }}</span>
                 </div>
                 <div>
                   <span class="text-white/70">📺 Channel:</span>
@@ -416,22 +415,16 @@
           requestIds.forEach(requestId => {
             const requestCard = document.getElementById(`request-${requestId}`);
             if (requestCard) {
-              requestCard.style.transition = 'all 0.3s ease';
-              requestCard.style.transform = 'translateX(-100%)';
-              setTimeout(() => {
-                requestCard.remove();
-              }, 300);
+              requestCard.remove();
             }
           });
           
           // Clear selection and reload if no requests left
-          setTimeout(() => {
-            clearSelection();
-            const remainingRequests = document.querySelectorAll('.request-card').length;
-            if (remainingRequests === 0) {
-              window.location.reload();
-            }
-          }, 500);
+          clearSelection();
+          const remainingRequests = document.querySelectorAll('.request-card').length;
+          if (remainingRequests === 0) {
+            window.location.reload();
+          }
         } else {
           alert('Error: ' + (data.error || 'Failed to delete requests'));
           // Re-enable checkboxes
