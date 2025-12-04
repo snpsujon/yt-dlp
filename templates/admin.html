@@ -76,6 +76,35 @@
     .file-card {
       transform-style: preserve-3d;
     }
+
+    /* Video Modal Styles */
+    #videoModal {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    #videoModal video {
+      background: #000;
+    }
+
+    #videoModal .glass {
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
   </style>
 </head>
 <body class="gradient-bg min-h-screen text-white">
@@ -182,6 +211,12 @@
                 </div>
               </div>
               <div class="flex gap-2">
+                {% if file.name.endswith('.mp4') or file.name.endswith('.webm') or file.name.endswith('.mkv') %}
+                <button onclick="playVideo('{{ file.name }}', '{{ file.name }}')" 
+                        class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg hover:from-blue-600 hover:to-indigo-700">
+                  ▶️ Play
+                </button>
+                {% endif %}
                 <a href="/downloads/{{ file.name }}" 
                    class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold btn-3d whitespace-nowrap shadow-lg hover:from-green-600 hover:to-emerald-700">
                   ⬇️ Download
@@ -202,6 +237,25 @@
           <p class="text-white/80">No files have been downloaded yet.</p>
         </div>
         {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Player Modal -->
+  <div id="videoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm">
+    <div class="relative w-full max-w-6xl mx-4 glass dark:glass-dark rounded-3xl shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between p-4 border-b border-white/20">
+        <h3 id="videoModalTitle" class="text-xl font-bold text-white truncate flex-1 mr-4"></h3>
+        <button onclick="closeVideoModal()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors">
+          ✕ Close
+        </button>
+      </div>
+      <!-- Video Player -->
+      <div class="p-6">
+        <video id="videoPlayer" controls class="w-full rounded-xl" style="max-height: 70vh;">
+          Your browser does not support the video tag.
+        </video>
       </div>
     </div>
   </div>
@@ -418,6 +472,60 @@
         }
       }
     }
+
+    function playVideo(filename, displayName) {
+      const modal = document.getElementById('videoModal');
+      const videoPlayer = document.getElementById('videoPlayer');
+      const modalTitle = document.getElementById('videoModalTitle');
+      
+      // Set video source
+      videoPlayer.src = `/downloads/${encodeURIComponent(filename)}`;
+      modalTitle.textContent = displayName;
+      
+      // Show modal
+      modal.classList.remove('hidden');
+      
+      // Play video
+      videoPlayer.load();
+      videoPlayer.play().catch(e => {
+        console.log('Auto-play prevented:', e);
+      });
+      
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeVideoModal() {
+      const modal = document.getElementById('videoModal');
+      const videoPlayer = document.getElementById('videoPlayer');
+      
+      // Pause and reset video
+      videoPlayer.pause();
+      videoPlayer.src = '';
+      
+      // Hide modal
+      modal.classList.add('hidden');
+      
+      // Restore body scroll
+      document.body.style.overflow = 'auto';
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('videoModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'videoModal') {
+        closeVideoModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('videoModal');
+        if (!modal.classList.contains('hidden')) {
+          closeVideoModal();
+        }
+      }
+    });
   </script>
 </body>
 </html>
